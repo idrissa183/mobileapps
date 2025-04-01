@@ -1,0 +1,15 @@
+mongodb.txt
+backend/.idea/
+backend/.venv/
+backend/.env
+backend/.gitignore
+backend/.dockerignore
+frontend/Banking/node_modules/
+frontend/Banking/.expo/
+frontend/Banking/.gitignore
+frontend/Clothes/node_modules/
+frontend/Clothes/.expo/
+frontend/Clothes/.gitignore
+frontend/Student/node_modules/
+frontend/Student/.gitignore
+frontend/Student/.expo/
