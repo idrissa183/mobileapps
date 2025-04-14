@@ -1,20 +1,46 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import "./global.css"
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer} from '@react-navigation/native';
+import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
+import CustomTabBar from './components/common/CustomTabBar';
+import { ThemeProvider } from './context/ThemeContext';
+import HomeScreen from './screens/home/HomeScreen';
+import CardsScreen from './screens/cards/CardsScreen';
+import HistoryScreen from './screens/history/HistoryScreen';
+import ProfileScreen from './screens/pofile/ProfileScreen';
+import ContactScreen from './screens/contact/ContactScreen';
+
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <AuthProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <StatusBar style="auto" />
+              <Tab.Navigator
+                screenOptions={{
+                  headerShown: true,
+                }}
+                tabBar={props => <CustomTabBar {...props} />}
+              >
+                <Tab.Screen name="Home" component={HomeScreen} />
+                <Tab.Screen name="Cards" component={CardsScreen} />
+                <Tab.Screen name="Main" component={ProfileScreen} />
+                <Tab.Screen name="Contact" component={ContactScreen} />
+                <Tab.Screen name="History" component={HistoryScreen} />
+              </Tab.Navigator>
+            </LanguageProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

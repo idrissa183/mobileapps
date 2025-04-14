@@ -4,8 +4,8 @@ import { View, Text, TextInput, FlatList, Image, TouchableOpacity, ScrollView } 
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { getProducts, getFeaturedProducts } from '../../services/products';
 import { Product } from '../../types/product.types';
+import { getFeaturedProducts, getProducts } from '../../services/product';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
