@@ -49,6 +49,33 @@ const HomeScreen = () => {
       isPositive: false,
       avatar: require('../../assets/avatars/avatar1.jpg')
     },
+    { 
+      id: 4, 
+      name: 'Alberto Montero', 
+      type: 'Added',
+      date: 'Today', 
+      amount: '+$600.00', 
+      isPositive: true,
+      avatar: require('../../assets/avatars/avatar1.jpg')
+    },
+    { 
+      id: 5, 
+      name: 'Alberto Montero', 
+      type: 'Added',
+      date: 'Today', 
+      amount: '+$600.00', 
+      isPositive: true,
+      avatar: require('../../assets/avatars/avatar1.jpg')
+    },
+    { 
+      id: 6, 
+      name: 'Alberto Montero', 
+      type: 'Added',
+      date: 'Today', 
+      amount: '+$600.00', 
+      isPositive: true,
+      avatar: require('../../assets/avatars/avatar1.jpg')
+    },
   ];
 
   // Remplacez ces valeurs par vos propres données
