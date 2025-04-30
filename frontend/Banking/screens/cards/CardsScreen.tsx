@@ -135,6 +135,7 @@ const CardsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 20,
   },
   scrollView: {
     flex: 1,
@@ -146,6 +147,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 20,
+    margin: 20,
+    borderRadius: 16,
+    backgroundColor: '#eceff3',
+    // backgroundColor: '#F3F4F6',
   },
   currencyLabel: {
     fontSize: 15,
