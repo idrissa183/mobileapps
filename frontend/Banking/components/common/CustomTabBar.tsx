@@ -82,8 +82,8 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
             case 'Cards':
               iconName = isFocused ? 'card' : 'card-outline';
               break;
-            case 'Main':
-              iconName = isFocused ? 'time' : 'time-outline';
+            case 'Settings':
+              iconName = isFocused ? 'settings' : 'settings-outline';
               break;
             case 'Contact':
               iconName = isFocused ? 'people' : 'people-outline';
@@ -93,20 +93,6 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               break;
             default:
               iconName = 'help-outline';
-          }
-
-          if (index === 2) {
-            return (
-              <View key={route.key} style={styles.centerTabContainer}>
-                <Pressable
-                  style={styles.centerTabButton}
-                  android_ripple={{ color: 'rgba(0, 0, 0, 0.1)', borderless: true }}
-                  onPress={() => navigation.navigate(route.name)}
-                >
-                  <Ionicons name={iconName as keyof typeof Ionicons.glyphMap} size={24} color="#FFFFFF" />
-                </Pressable>
-              </View>
-            );
           }
 
           return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, View, StatusBar, ViewProps } from 'react-native';
+import { SafeAreaView, View, StatusBar, StyleSheet, ViewProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 
 interface SafeAreaWrapperProps extends ViewProps {
@@ -7,22 +7,31 @@ interface SafeAreaWrapperProps extends ViewProps {
 }
 
 const SafeAreaWrapper: React.FC<SafeAreaWrapperProps> = ({ children, style, ...props }) => {
-  const { theme, isDarkMode } = useTheme();
-  
+  const { isDarkMode } = useTheme();
+
+  const backgroundColor = isDarkMode ? '#111827' : '#FFFFFF';
+  const barStyle = isDarkMode ? 'light-content' : 'dark-content';
+
   return (
-    <SafeAreaView 
-      className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor }]}
       {...props}
     >
-      <StatusBar 
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
-        backgroundColor={isDarkMode ? '#111827' : '#FFFFFF'}
-      />
-      <View className="flex-1" style={style}>
+      <StatusBar barStyle={barStyle} backgroundColor={backgroundColor} />
+      <View style={[styles.content, style]}>
         {children}
       </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+});
 
 export default SafeAreaWrapper;
