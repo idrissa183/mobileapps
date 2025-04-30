@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -10,10 +10,11 @@ import {
   Dimensions 
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
+import axios from 'axios';
 
 const { width } = Dimensions.get('window');
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const { isDarkMode } = useTheme();
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
@@ -78,12 +79,51 @@ const HomeScreen = () => {
     },
   ];
 
+  const [currRates, setCurrRates] = React.useState<{ currency: string; rate: number | null }[]>([]);
+
+  useEffect(() => {
+    async function retrieveCurrRates() {
+      axios.get('https://api.exchangerate-api.com/v4/latest/USD')
+        .then((response) => {
+          const rates = response?.data.rates;
+            const currRatesArray = ['USD', 'XOF', 'EUR'].map((key) => {
+            return { currency: key, rate: rates[key] };
+            });
+          setCurrRates(currRatesArray);
+        })
+        .catch((error) => {
+          console.error('Error fetching currency rates:', error);
+        });
+    }
+
+    retrieveCurrRates();
+  }
+  , []);
+
+  const balance = 1230.60
   // Remplacez ces valeurs par vos propres données
-  const balances = [
-    { id: 1, currency: 'US Dollar', amount: '1.230,60', flag: require('../../assets/flags/nigeria.jpg') },
-    { id: 2, currency: 'Australia Dollar', amount: '3.630,60', flag: require('../../assets/flags/nigeria.jpg') },
-    { id: 3, currency: 'Euro', amount: '830,40', flag: require('../../assets/flags/nigeria.jpg') },
-  ];
+  // const balances = [
+  //   { id: 1, currency: 'US Dollar', amount: '1.230,60', flag: require('../../assets/flags/usd.jpg') },
+  //   { id: 2, currency: 'XOF', amount: '3.630,60', flag: require('../../assets/flags/xof.jpg') },
+  //   { id: 3, currency: 'Euro', amount: '830,40', flag: require('../../assets/flags/euro.jpg') },
+  // ];
+
+  const flagImages = {
+    usd: require('../../assets/flags/usd.jpg'),
+    xof: require('../../assets/flags/xof.jpg'),
+    eur: require('../../assets/flags/eur.jpg'),
+  };
+
+  const formatNumberWithCommas = (number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const balances = currRates.map((currRate, index) => ({
+    id: index + 1,
+    amount: formatNumberWithCommas((balance * currRate.rate).toFixed(2)),
+    currency: currRate.currency,
+    flag: flagImages[currRate.currency.toLowerCase()] || null, // Use the mapping object for flag images
+  }));
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
@@ -110,12 +150,15 @@ const HomeScreen = () => {
               <View style={styles.flagContainer}>
                 <Image source={balance.flag} style={styles.flag} />
               </View>
-              <Text style={[styles.balanceAmount, headerTextStyle]}>{balance.amount}</Text>
-              <Text style={[styles.balanceCurrency, secondaryTextStyle]}>{balance.currency}</Text>
+
+              <View>
+                <Text style={[styles.balanceAmount, headerTextStyle]}>{balance.amount}</Text>
+                <Text style={[styles.balanceCurrency, secondaryTextStyle]}>{balance.currency}</Text>
+              </View>
             </View>
           ))}
         </ScrollView>
-        
+
         {/* Section d'invitation */}
         <View style={styles.inviteContainer}>
           <View>
@@ -126,12 +169,16 @@ const HomeScreen = () => {
             <Text style={styles.earnButtonText}>Earn $100</Text>
           </TouchableOpacity>
         </View>
-        
+
         {/* Section des transactions */}
         <View style={styles.transactionSection}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, headerTextStyle]}>Transaction</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('History');
+              }}
+            >
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -167,6 +214,7 @@ const styles = StyleSheet.create({
   // Styles de base
   container: {
     flex: 1,
+    paddingTop: 20,
   },
   scrollView: {
     flex: 1,
@@ -193,10 +241,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   balanceCard: {
+    display: 'flex',
+    justifyContent: 'space-between',
     width: width * 0.4,
     borderRadius: 16,
     padding: 16,
     marginRight: 12,
+    height: 150,
   },
   flagContainer: {
     width: 36,
@@ -208,9 +259,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   flag: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   balanceAmount: {
     fontSize: 24,
