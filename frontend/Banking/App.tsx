@@ -55,7 +55,7 @@ const MainAppTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
       }}
       tabBar={(props: BottomTabBarProps) => <CustomTabBar {...props} />}
     >
@@ -74,7 +74,7 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
+        {/* {!isAuthenticated ? (
           <>
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
@@ -83,7 +83,8 @@ const Navigation = () => {
           </>
         ) : (
           <Stack.Screen name="MainApp" component={MainAppTabs} />
-        )}
+        )} */}
+        <Stack.Screen name="MainApp" component={MainAppTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

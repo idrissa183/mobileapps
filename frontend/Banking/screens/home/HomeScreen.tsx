@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inviteText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: '#0C4A6E',
   },
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   earnButtonText: {
     color: 'white',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 18,
   },
   transactionSection: {
     paddingHorizontal: 20,
@@ -307,12 +307,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   viewAllText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#1E40AF',
+    textDecorationLine: 'underline',
   },
   transactionItem: {
     flexDirection: 'row',
@@ -325,24 +326,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   transactionAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
     marginRight: 12,
   },
   transactionName: {
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 20,
     marginBottom: 4,
   },
   transactionMeta: {
     flexDirection: 'row',
   },
   transactionType: {
-    fontSize: 14,
+    fontSize: 16,
   },
   transactionDate: {
-    fontSize: 14,
+    fontSize: 16,
   },
   transactionAmount: {
     fontWeight: '600',
