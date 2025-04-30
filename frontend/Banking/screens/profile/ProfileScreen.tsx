@@ -9,7 +9,7 @@ const ProfileScreen = () => {
             <ScrollView className="flex-1">
                 <View className="p-4">
                     <Text className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                        Main Screen
+                        Profile Screen
                     </Text>
                 </View>
             </ScrollView>

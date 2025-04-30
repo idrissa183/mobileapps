@@ -7,6 +7,8 @@ interface User {
   username: string;
   email: string;
   full_name: string;
+  hashed_password: string;
+  phone?: string;
   profile_image?: string;
 }
 
@@ -16,7 +18,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   needsOtpVerification: boolean;
-  tempUserId?: string; // Used for OTP verification
+  tempUserId?: string;
 }
 
 interface AuthContextType extends AuthState {
