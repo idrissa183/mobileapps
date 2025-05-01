@@ -40,7 +40,6 @@ export const verifyOtpApi = async (userId: string, otp: string) => {
   });
 };
 
-
 export const forgotPasswordApi = async (email: string) => {
     return await api.post('/auth/forgot-password', {
       email,

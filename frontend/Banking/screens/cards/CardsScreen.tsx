@@ -7,10 +7,14 @@ import {
   StyleSheet, 
   Image, 
   TouchableOpacity, 
-  Dimensions 
+  Dimensions, 
+  Modal,
+  TextInput
 } from "react-native";
+import {Picker} from '@react-native-picker/picker';
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +26,31 @@ const CardsScreen = () => {
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const cardDetailBgStyle = isDarkMode ? styles.darkCardDetailBg : styles.lightCardDetailBg;
   const cardInfoBgStyle = isDarkMode ? styles.darkCardInfoBg : styles.lightCardInfoBg;
+
+  const [topUpModalVisible, setTopUpModalVisible] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState(0);
+  const [cardModalVisible, setCardModalVisible] = useState(false);
+  const [cardName, setCardName] = useState('');
+  const [cardType, setCardType] = useState('debit');
+
+  const handleTopUpClick = () => {
+    setTopUpModalVisible(true);
+  };
+
+  const handleSaveTopUp = () => {
+    console.log('Top Up Amount:', topUpAmount+balance);
+    setTopUpModalVisible(false);
+  };
+
+  const handleNewCardClick = () => {
+    setCardModalVisible(true);
+  };
+  
+  const handleSaveCard = () => {
+    console.log('Card Name:', cardName);
+    console.log('Card Type:', cardType);
+    setCardModalVisible(false);
+  };
 
   // Card data
   const cards = [
@@ -43,14 +72,90 @@ const CardsScreen = () => {
     setIsCvvVisible(!isCvvVisible);
   };
 
-  const formatNumberWithCommas = (number: number) => {
+  const formatNumberWithCommas = (number: string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  const balance = 1230.60; // Example balance
+  const balance: Float = 1230.60; // Example balance
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
+      {/* Model for New Top Up */}
+      <Modal
+        visible={topUpModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {setTopUpModalVisible(false); setTopUpAmount(0);}}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Top Up</Text>
+
+            {/* Top Up Amount Input */}
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Amount"
+              keyboardType="numeric"
+              value={topUpAmount.toString()}
+              onChangeText={(text) => setTopUpAmount(Number(text))}
+            />
+
+            {/* Save and Cancel Buttons */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleSaveTopUp} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setTopUpModalVisible(false)} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for New Card */}
+      <Modal
+        visible={cardModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {setCardModalVisible(false); setCardName(''); setCardType('debit');}}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New Card</Text>
+
+            {/* Card Name Input */}
+            <TextInput
+              style={styles.input}
+              placeholder="Card Name"
+              value={cardName}
+              onChangeText={setCardName}
+            />
+
+            {/* Card Type Dropdown */}
+            <Picker
+              selectedValue={cardType}
+              style={styles.picker}
+              onValueChange={(itemValue: string) => setCardType(itemValue)}
+            >
+              <Picker.Item label="Debit" value="debit" />
+              <Picker.Item label="Credit" value="credit" />
+              <Picker.Item label="Virtual" value="virtual" />
+            </Picker>
+
+            {/* Save and Cancel Buttons */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleSaveCard} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setCardModalVisible(false)} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -58,8 +163,8 @@ const CardsScreen = () => {
             <Text style={[styles.currencyLabel, secondaryTextStyle]}>US Dollar</Text>
             <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(balance.toFixed(2))}</Text>
           </View>
-          <TouchableOpacity style={styles.topUpButton}>
-            <Ionicons name="add-circle-outline" size={18} color="#111827" />
+          <TouchableOpacity style={styles.topUpButton} onPress={handleTopUpClick}>
+            <Ionicons name="add-circle-outline" size={18} color={isDarkMode ? "white" : "#111827"} />
             <Text style={styles.topUpText}>Top Up</Text>
           </TouchableOpacity>
         </View>
@@ -112,7 +217,7 @@ const CardsScreen = () => {
         <View style={[styles.cardDetailsSection, cardDetailBgStyle]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, headerTextStyle]}>Card Detail</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleNewCardClick}>
               <Text style={styles.viewAllText}>New Card</Text>
             </TouchableOpacity>
           </View>
@@ -132,7 +237,7 @@ const CardsScreen = () => {
                   <Ionicons
                     name={isCvvVisible ? "eye-outline" : "eye-off-outline"}
                     size={18}
-                    color="#111827" />
+                    color={isDarkMode ? "white" : "black"} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -388,6 +493,66 @@ const styles = StyleSheet.create({
   },
   darkCardInfoBg: {
     backgroundColor: '#374151',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  saveButton: {
+    backgroundColor: '#2563EB',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: '#E5E7EB',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#111827',
+    fontWeight: 'bold',
   },
 });
 
