@@ -22,12 +22,12 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
     const tabWidth = SCREEN_WIDTH / state.routes.length;
     const newPosition = state.index * tabWidth + tabWidth / 2;
 
-    if (state.index !== 2) {
+    
       indicatorPosition.value = withSpring(newPosition, {
         damping: 15,
         stiffness: 120
       });
-    }
+    
   }, [state.index]);
 
   const indicatorStyle = useAnimatedStyle(() => {
