@@ -17,7 +17,8 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
-import * as Linking from 'expo-linking'; // Changed import to use expo-linking explicitly
+import { Linking } from 'react-native'; 
+import useAuth from "../../hooks/useAuth";
 
 // Définition des langues disponibles
 const languages = [
@@ -33,7 +34,9 @@ const SettingsScreen = ({ navigation }) => {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [locationServiceStatus, setLocationServiceStatus] = useState('unknown'); // 'unknown', 'granted', 'denied'
-  
+  const { resetPassword, logout } = useAuth();
+
+
   // Vérifier et demander les permissions de localisation au chargement
   useEffect(() => {
     checkLocationPermission();
@@ -67,6 +70,8 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
   
+
+
   // Fonction pour vérifier et demander les permissions de localisation
   const checkLocationPermission = async () => {
     try {
@@ -152,19 +157,29 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   // Gestion de la déconnexion
-  const handleLogout = () => {
-    Alert.alert(
-      t('logout', 'auth'),
-      t('confirmLogout', 'auth'),
-      [
-        { text: t('cancel', 'common'), style: "cancel" },
-        { text: t('logout', 'auth'), onPress: () => {
-          console.log("User logged out");
-          // Implémentez ici votre logique de déconnexion
-          // navigation.navigate('Auth'); // Par exemple, rediriger vers l'écran d'authentification
-        }}
-      ]
-    );
+  const handleLogout  = async () => {
+    try {
+      // Appel à ta fonction de logout depuis le contexte ou un service
+      await logout();
+  
+      // Redirige vers l'écran de connexion ou d'accueil
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }], // Remplace 'Login' si ton écran a un autre nom
+      });
+    } catch (error: any) {
+      if (error.response) {
+        Alert.alert(
+          t('error', 'common'),
+          t('serverError', 'common')
+        );
+      } else {
+        Alert.alert(
+          t('error', 'common'),
+          t('networkError', 'common')
+        );
+      }
+    }
   };
 
   // Élément de paramètre avec icône et texte
@@ -320,7 +335,7 @@ const SettingsScreen = ({ navigation }) => {
       onPress: () => {
         console.log('Contact Support pressed'); // Debug log
         // Ouvrir directement le client email sans la alerte de confirmation
-        openURL('mailto:walkercompaore972@gmail.com?subject=' + encodeURIComponent(t('supportRequestSubject', 'settings')));
+        openURL('mailto:walkercompaore972@gmail.com' + encodeURIComponent(t('supportRequestSubject', 'settings')));
       }
     },
     {
