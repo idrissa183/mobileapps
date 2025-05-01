@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 2, 
@@ -39,7 +39,7 @@ const HomeScreen = ({ navigation }) => {
       date: '27 Aug', 
       amount: '+$8.50', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg') 
+      avatar: require('../../assets/avatars/avatar2.jpg') 
     },
     { 
       id: 3, 
@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
       date: '27 Aug', 
       amount: '-$10.50', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 4, 
@@ -57,7 +57,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 5, 
@@ -66,7 +66,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 6, 
@@ -75,7 +75,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
   ];
 
@@ -114,7 +114,7 @@ const HomeScreen = ({ navigation }) => {
     eur: require('../../assets/flags/eur.jpg'),
   };
 
-  const formatNumberWithCommas = (number) => {
+  const formatNumberWithCommas = (number: number) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
@@ -131,9 +131,9 @@ const HomeScreen = ({ navigation }) => {
         {/* Header avec le titre et l'avatar */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, headerTextStyle]}>Balance</Text>
-          <TouchableOpacity>
+          <TouchableOpacity  onPress={() => navigation.navigate('Profile')}>
             <Image 
-              source={require('../../assets/avatars/avatar1.jpg')}
+              source={require('../../assets/avatars/avatar2.jpg')}
               style={styles.avatar}
             />
           </TouchableOpacity>
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inviteText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: '#0C4A6E',
   },
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   earnButtonText: {
     color: 'white',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 18,
   },
   transactionSection: {
     paddingHorizontal: 20,
@@ -307,12 +307,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   viewAllText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#1E40AF',
+    textDecorationLine: 'underline',
   },
   transactionItem: {
     flexDirection: 'row',
@@ -325,24 +326,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   transactionAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
     marginRight: 12,
   },
   transactionName: {
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 20,
     marginBottom: 4,
   },
   transactionMeta: {
     flexDirection: 'row',
   },
   transactionType: {
-    fontSize: 14,
+    fontSize: 16,
   },
   transactionDate: {
-    fontSize: 14,
+    fontSize: 16,
   },
   transactionAmount: {
     fontWeight: '600',

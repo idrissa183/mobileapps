@@ -94,7 +94,7 @@ const authService = {
             await AsyncStorage.setItem('refreshToken', response.data.refresh_token);
             await AsyncStorage.setItem('tokenExpiry', (Date.now() + response.data.expires_in * 1000).toString());
             await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
-
+            console.log(response.data)
             return response.data;
         } catch (error: any) {
             console.error('Login error:', error.response?.data || error.message);

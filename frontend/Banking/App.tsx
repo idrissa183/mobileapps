@@ -20,6 +20,7 @@ import CardsScreen from './screens/cards/CardsScreen';
 import HistoryScreen from './screens/history/HistoryScreen';
 import ContactScreen from './screens/contact/ContactScreen';
 import SettingsScreen from './screens/settings/SettingsScreen';
+import ProfileScreen from './screens/profile/ProfileScreen';
 
 // Auth Screens
 import SignInScreen from './screens/auth/SignInScreen';
@@ -83,6 +84,7 @@ const Navigation = () => {
           </>
         ) : (
           <Stack.Screen name="MainApp" component={MainAppTabs} />
+          // <Stack.Screen name="Profile" component={ProfileScreen} />
         )}
         {/* <Stack.Screen name="MainApp" component={MainAppTabs} /> */}
       </Stack.Navigator>
