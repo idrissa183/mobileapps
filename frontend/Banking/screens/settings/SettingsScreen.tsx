@@ -1,20 +1,42 @@
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, Text, View, StyleSheet } from "react-native";
 import useTheme from "../../hooks/useTheme";
 
 const SettingsScreen = () => {
     const { isDarkMode } = useTheme();
 
+    const styles = getStyles(isDarkMode);
+
     return (
-        <SafeAreaView className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-            <ScrollView className="flex-1">
-                <View className="p-4">
-                    <Text className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                        Settings Screen
+        <SafeAreaView style={styles.container}>
+            <ScrollView style={styles.scroll}>
+                <View style={styles.innerContainer}>
+                    <Text style={styles.title}>
                     </Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
-}
+};
+
+const getStyles = (isDarkMode: boolean) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            paddingTop: 30,
+            backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
+        },
+        scroll: {
+            flex: 1,
+        },
+        innerContainer: {
+            padding: 16, 
+        },
+        title: {
+            fontSize: 24, 
+            fontWeight: 'bold',
+            marginBottom: 24,
+            color: isDarkMode ? '#ffffff' : '#1f2937',
+        },
+    });
 
 export default SettingsScreen;

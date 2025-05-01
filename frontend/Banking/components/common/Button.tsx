@@ -21,25 +21,25 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const { theme, isDarkMode } = useTheme();
-  
+
   // Styles based on variant
   const getVariantStyle = () => {
     switch (variant) {
       case 'primary':
-        return isDarkMode 
-          ? 'bg-blue-600 border-blue-600' 
+        return isDarkMode
+          ? 'bg-blue-600 border-blue-600'
           : 'bg-blue-500 border-blue-500';
       case 'secondary':
-        return isDarkMode 
-          ? 'bg-gray-700 border-gray-700' 
+        return isDarkMode
+          ? 'bg-gray-700 border-gray-700'
           : 'bg-gray-200 border-gray-200';
       case 'outline':
-        return isDarkMode 
-          ? 'bg-transparent border-blue-400' 
+        return isDarkMode
+          ? 'bg-transparent border-blue-400'
           : 'bg-transparent border-blue-500';
     }
   };
-  
+
   // Styles based on size
   const getSizeStyle = () => {
     switch (size) {
@@ -51,7 +51,7 @@ const Button: React.FC<ButtonProps> = ({
         return 'py-3 px-6 rounded-lg text-lg';
     }
   };
-  
+
   // Text color based on variant
   const getTextColor = () => {
     if (variant === 'outline') {
@@ -61,7 +61,7 @@ const Button: React.FC<ButtonProps> = ({
     }
     return 'text-white';
   };
-  
+
   return (
     <TouchableOpacity
       disabled={disabled || loading}

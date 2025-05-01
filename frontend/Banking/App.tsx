@@ -34,7 +34,7 @@ export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
-  OTPVerification: undefined;
+  OTPVerification: { email: string; mode: string };
   Terms: undefined;
   PrivacyPolicy: undefined;
   MainApp: undefined;
@@ -55,7 +55,7 @@ const MainAppTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
       }}
       tabBar={(props: BottomTabBarProps) => <CustomTabBar {...props} />}
     >
@@ -84,6 +84,7 @@ const Navigation = () => {
         ) : (
           <Stack.Screen name="MainApp" component={MainAppTabs} />
         )}
+        {/* <Stack.Screen name="MainApp" component={MainAppTabs} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
