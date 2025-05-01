@@ -145,9 +145,6 @@ const ContactScreen = () => {
         {/* Header avec le titre et le bouton d'ajout de contact */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, headerTextStyle]}>Contacts</Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
@@ -284,14 +281,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1E40AF',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   addButtonText: {
     color: 'white',
