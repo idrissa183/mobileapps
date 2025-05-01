@@ -3,9 +3,10 @@ from beanie import init_beanie
 import logging
 
 from ..config.settings import get_settings
+from ..models.blacklisted_token import BlacklistedToken
 from ..models.user import User
 from ..models.student import Student, Course, Assignment, Grade, Attendance
-from ..models.banking import Account, Transaction, Card, TransferBeneficiary
+from ..models.banking import Account, Transaction, Card, TransferBeneficiary, ExchangeRate, CurrencyConversion
 from ..models.clothes import Product, Category, Brand, Review, UserPreference
 
 settings = get_settings()
@@ -23,6 +24,7 @@ async def init_db():
         mongo_uri = settings.MONGODB_URI
         client = AsyncIOMotorClient(
             mongo_uri,
+            serverSelectionTimeoutMS=5000
         )
 
         # Ping the database to verify the connection
@@ -34,6 +36,7 @@ async def init_db():
             document_models=[
                 # User models
                 User,
+                BlacklistedToken,
 
                 # Student app models
                 Student,
@@ -47,6 +50,8 @@ async def init_db():
                 Transaction,
                 Card,
                 TransferBeneficiary,
+                ExchangeRate,
+                CurrencyConversion,
 
                 # Clothes app models
                 Product,

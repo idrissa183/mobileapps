@@ -42,6 +42,12 @@ class Settings(BaseSettings):
         "http://localhost:8080",
         "http://localhost:19000",
         "http://localhost:19006",
+        "https://banque-vgx0.onrender.com",
+        "http://localhost:8081",
+        "http://192.168.88.36:8081",
+        "exp://192.168.88.36:8081",
+        "exp://192.168.88.*:8081",
+        "http://192.168.88.*:8081",
     ]
 
     @field_validator('CORS_ORIGINS')
@@ -61,10 +67,18 @@ class Settings(BaseSettings):
 
     # SMS and Email configuration for banking notifications
     SMS_API_KEY: str = "your-sms-api-key"
-    EMAIL_HOST: str = "smtp.mailserver.com"
+
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    EMAIL_HOST: str = "smtp.gmail.com"
     EMAIL_PORT: int = 587
-    EMAIL_USERNAME: str = "noreply@yourdomain.com"
-    EMAIL_PASSWORD: str = "your-email-password"
+    EMAIL_USERNAME: str = "ouedraogoidrissa7108@gmail.com"
+    EMAIL_PASSWORD: str = "hoqmmawnbybtpzdh"
+
+    # Configuration pour l'API de taux de change
+    EXCHANGE_API_BASE_URL: str = "https://open.er-api.com/v6/latest"
+    EXCHANGE_RATE_CACHE_DURATION: int = 21600
+    CURRENCY_CONVERSION_DEFAULT_FEE: float = 0.025
 
     # Application specific settings
     STUDENT_DEFAULT_CURRENCY: str = "USD"
