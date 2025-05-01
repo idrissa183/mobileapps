@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 2, 
@@ -39,7 +39,7 @@ const HomeScreen = ({ navigation }) => {
       date: '27 Aug', 
       amount: '+$8.50', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg') 
+      avatar: require('../../assets/avatars/avatar2.jpg') 
     },
     { 
       id: 3, 
@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
       date: '27 Aug', 
       amount: '-$10.50', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 4, 
@@ -57,7 +57,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 5, 
@@ -66,7 +66,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 6, 
@@ -75,7 +75,7 @@ const HomeScreen = ({ navigation }) => {
       date: 'Today', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
   ];
 
@@ -114,7 +114,7 @@ const HomeScreen = ({ navigation }) => {
     eur: require('../../assets/flags/eur.jpg'),
   };
 
-  const formatNumberWithCommas = (number) => {
+  const formatNumberWithCommas = (number: number) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
@@ -131,9 +131,9 @@ const HomeScreen = ({ navigation }) => {
         {/* Header avec le titre et l'avatar */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, headerTextStyle]}>Balance</Text>
-          <TouchableOpacity>
+          <TouchableOpacity  onPress={() => navigation.navigate('Profile')}>
             <Image 
-              source={require('../../assets/avatars/avatar1.jpg')}
+              source={require('../../assets/avatars/avatar2.jpg')}
               style={styles.avatar}
             />
           </TouchableOpacity>
