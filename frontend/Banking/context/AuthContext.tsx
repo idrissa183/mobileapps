@@ -1,15 +1,21 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginApi, registerApi, verifyOtpApi, forgotPasswordApi } from '../services/auth';
+import authService from '../services/authService';
 
 interface User {
   id: string;
   username: string;
   email: string;
   full_name: string;
-  hashed_password: string;
   phone?: string;
   profile_image?: string;
+  roles: string[];
+  status: string;
+  uses_student_app: boolean;
+  uses_banking_app: boolean;
+  uses_clothes_app: boolean;
+  created_at: string;
+  last_login?: string;
 }
 
 interface AuthState {
@@ -18,16 +24,19 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   needsOtpVerification: boolean;
-  tempUserId?: string;
+  pendingEmail?: string;
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
-  verifyOtp: (otp: string) => Promise<void>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  resetPassword: (email: string, resetCode: string, newPassword: string) => Promise<void>;
+  updateProfile: (profileData: any) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  resendOtp: (email: string) => Promise<void>;
 }
 
 const initialState: AuthState = {
@@ -40,26 +49,28 @@ const initialState: AuthState = {
 
 export const AuthContext = createContext<AuthContextType>({
   ...initialState,
-  login: async () => {},
-  register: async () => {},
-  logout: async () => {},
-  verifyOtp: async () => {},
-  forgotPassword: async () => {},
-  resetPassword: async () => {},
+  login: async () => { },
+  register: async () => { },
+  logout: async () => { },
+  verifyOtp: async () => { },
+  forgotPassword: async () => { },
+  resetPassword: async () => { },
+  updateProfile: async () => { },
+  changePassword: async () => { },
+  resendOtp: async () => { },
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>(initialState);
 
-  // Check if user is already logged in
   useEffect(() => {
-    const loadToken = async () => {
+    const loadAuthState = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
-        const userString = await AsyncStorage.getItem('user');
-        
-        if (token && userString) {
-          const user = JSON.parse(userString);
+        const userJson = await AsyncStorage.getItem('user');
+
+        if (token && userJson) {
+          const user = JSON.parse(userJson);
           setAuthState({
             user,
             token,
@@ -82,39 +93,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    loadToken();
+    loadAuthState();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      const { data } = await loginApi(email, password);
-      
-      // If OTP verification is required
-      if (data.requires_otp) {
-        setAuthState({
-          ...initialState,
-          isLoading: false,
-          needsOtpVerification: true,
-          tempUserId: data.user_id,
-        });
-        return;
-      }
-      
-      // If login successful and no OTP required
-      await AsyncStorage.setItem('authToken', data.access_token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      
+      const response = await authService.login(username, password);
+
       setAuthState({
-        user: data.user,
-        token: data.access_token,
+        user: response.user,
+        token: response.access_token,
         isLoading: false,
         isAuthenticated: true,
         needsOtpVerification: false,
       });
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
+
+      if (error.response?.data?.requires_otp) {
+        setAuthState(prev => ({
+          ...prev,
+          needsOtpVerification: true,
+          pendingEmail: username.includes('@') ? username : error.response?.data?.email
+        }));
+      }
+
       throw error;
     }
   };
@@ -122,55 +126,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: any) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      const { data } = await registerApi(userData);
-      
-      // If registration requires OTP verification
-      if (data.requires_otp) {
-        setAuthState({
-          ...initialState,
-          isLoading: false,
-          needsOtpVerification: true,
-          tempUserId: data.user_id,
-        });
-        return;
-      }
-      
-      // If registration is successful and no OTP required
-      await AsyncStorage.setItem('authToken', data.access_token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      
+      const response = await authService.register(userData);
+
       setAuthState({
-        user: data.user,
-        token: data.access_token,
+        ...initialState,
         isLoading: false,
-        isAuthenticated: true,
-        needsOtpVerification: false,
+        needsOtpVerification: true,
+        pendingEmail: userData.email,
       });
     } catch (error) {
-      console.error('Registration error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
 
-  const verifyOtp = async (otp: string) => {
+  const verifyOtp = async (email: string, otp: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      const { data } = await verifyOtpApi(authState.tempUserId || '', otp);
-      
-      // If OTP verification is successful
-      await AsyncStorage.setItem('authToken', data.access_token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      
+      const response = await authService.verifyOtp(email, otp);
+
       setAuthState({
-        user: data.user,
-        token: data.access_token,
+        user: response,
+        token: response.access_token,
         isLoading: false,
         isAuthenticated: true,
         needsOtpVerification: false,
       });
     } catch (error) {
-      console.error('OTP verification error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
@@ -179,22 +161,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forgotPassword = async (email: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      await forgotPasswordApi(email);
+      await authService.forgotPassword(email);
       setAuthState(prev => ({ ...prev, isLoading: false }));
     } catch (error) {
-      console.error('Forgot password error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
 
-  const resetPassword = async (token: string, newPassword: string) => {
+  const resetPassword = async (email: string, resetCode: string, newPassword: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      // Implement resetPasswordApi
+      await authService.resetPassword(email, resetCode, newPassword);
       setAuthState(prev => ({ ...prev, isLoading: false }));
     } catch (error) {
-      console.error('Reset password error:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      throw error;
+    }
+  };
+
+  const updateProfile = async (profileData: any) => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      const updatedUser = await authService.updateProfile(profileData);
+
+      setAuthState(prev => ({
+        ...prev,
+        user: updatedUser,
+        isLoading: false,
+      }));
+    } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      throw error;
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      await authService.changePassword(currentPassword, newPassword);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      throw error;
+    }
+  };
+
+  const resendOtp = async (email: string) => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      await authService.resendOtp(email);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
@@ -202,14 +220,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('user');
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      await authService.logout();
+
       setAuthState({
         ...initialState,
         isLoading: false,
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
@@ -224,6 +243,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyOtp,
         forgotPassword,
         resetPassword,
+        updateProfile,
+        changePassword,
+        resendOtp,
       }}
     >
       {children}

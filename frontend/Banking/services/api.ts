@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://banque-vgx0.onrender.com/api';
 const API_TIMEOUT = 30000;
 
 

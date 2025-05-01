@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   // Base styles
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop:30,
   },
   scrollView: {
     flex: 1,

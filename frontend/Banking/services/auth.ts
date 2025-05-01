@@ -3,17 +3,25 @@ import api from './api';
 interface LoginResponse {
   access_token: string;
   refresh_token: string;
-  user: any;
-  requires_otp?: boolean;
-  user_id?: string;
+  token_type: string;
+  expire_in: string;
+  user?: any;
 }
 
 interface RegisterResponse {
-  access_token: string;
-  refresh_token: string;
-  user: any;
-  requires_otp?: boolean;
-  user_id?: string;
+  id: string;
+  username: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  profile_image: string | null;
+  roles: string[];
+  status: string;
+  uses_student_app: boolean;
+  uses_banking_app: boolean;
+  uses_clothes_app: boolean;
+  created_at: string;
+  last_login: string | null;
 }
 
 interface OtpVerificationResponse {
@@ -41,20 +49,20 @@ export const verifyOtpApi = async (userId: string, otp: string) => {
 };
 
 export const forgotPasswordApi = async (email: string) => {
-    return await api.post('/auth/forgot-password', {
-      email,
-    });
-  };
-  
-  export const resetPasswordApi = async (token: string, newPassword: string) => {
-    return await api.post('/auth/reset-password', {
-      token,
-      password: newPassword,
-    });
-  };
-  
-  export const refreshTokenApi = async (refreshToken: string) => {
-    return await api.post('/auth/refresh-token', {
-      token: refreshToken,
-    });
-  };
+  return await api.post('/auth/forgot-password', {
+    email,
+  });
+};
+
+export const resetPasswordApi = async (token: string, newPassword: string) => {
+  return await api.post('/auth/reset-password', {
+    token,
+    password: newPassword,
+  });
+};
+
+export const refreshTokenApi = async (refreshToken: string) => {
+  return await api.post('/auth/refresh-token', {
+    token: refreshToken,
+  });
+};

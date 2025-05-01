@@ -14,48 +14,15 @@ import useTranslation from "../../hooks/useTranslation";
 import { RootStackParamList } from "../../App";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useAuth from "../../hooks/useAuth";
 
-const API_URL = 'https://banque-vgx0.onrender.com/api';
-
-const authService = {
-  login: async (username: string, password: string) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth/token`, {
-        username,
-        password
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erreur de connexion:', error.response?.data || error.message);
-      throw error;
-    }
-  },
-
-  saveTokens: async (tokens: any) => {
-    try {
-      await AsyncStorage.setItem('access_token', tokens.access_token);
-      await AsyncStorage.setItem('refresh_token', tokens.refresh_token);
-      await AsyncStorage.setItem('token_expiry', (Date.now() + tokens.expires_in * 1000).toString());
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde des tokens:', error);
-    }
-  },
-
-  getUser: async () => {
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erreur lors de la récupération du profil:', error.response?.data || error.message);
-      throw error;
-    }
-  }
-};
+// type RootStackParamList = {
+//   SignIn: undefined;
+//   SignUp: undefined;
+//   ForgotPassword: undefined;
+//   MainApp: undefined;
+//   OtpVerification: { email: string; mode: 'login' | 'register' };
+// };
 
 const languages = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
@@ -68,11 +35,13 @@ const SignInScreen = () => {
   const navigation = useNavigation<SignInScreenNavigationProp>();
   const { isDarkMode } = useTheme();
   const { t, language, setLanguage } = useTranslation();
+  const { login, isLoading, needsOtpVerification, pendingEmail } = useAuth();
+
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [errors, setErrors] = useState({
     username: '',
@@ -81,7 +50,7 @@ const SignInScreen = () => {
 
   const styles = getStyles(isDarkMode);
 
-  const handleSignIn = async() => {
+  const handleSignIn = async () => {
     setErrors({
       username: '',
       password: '',
@@ -105,25 +74,20 @@ const SignInScreen = () => {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const tokenData = await authService.login(username, password);
+      await login(username, password);
 
-      if (rememberMe) {
-        await authService.saveTokens(tokenData);
+      if (!needsOtpVerification) {
+        navigation.navigate('MainApp');
       }
-
-      const userData = await authService.getUser();
-
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
-
-      axios.defaults.headers.common['Authorization'] = `Bearer ${tokenData.access_token}`;
-
-      setIsLoading(false);
-      navigation.navigate('MainApp');
     } catch (error: any) {
-      setIsLoading(false);
-
+      if (needsOtpVerification && pendingEmail) {
+        navigation.navigate('OTPVerification', {
+          email: pendingEmail,
+          mode: 'login'
+        });
+        return;
+      }
       if (error.response) {
         switch (error.response.status) {
           case 401:
@@ -151,11 +115,6 @@ const SignInScreen = () => {
         );
       }
     }
-
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   navigation.navigate('MainApp');
-    // }, 1500);
   };
 
   const openLanguageModal = () => {
@@ -175,7 +134,7 @@ const SignInScreen = () => {
   return (
     <SafeAreaWrapper>
       <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.container}>
-        {/* Header with language selector - Explicitly styled with fixed height */}
+        {/* Header with language selector */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />

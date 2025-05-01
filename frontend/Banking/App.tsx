@@ -35,7 +35,7 @@ export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
-  OTPVerification: undefined;
+  OTPVerification: { email: string; mode: string };
   Terms: undefined;
   PrivacyPolicy: undefined;
   MainApp: undefined;
@@ -75,7 +75,7 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* {!isAuthenticated ? (
+        {!isAuthenticated ? (
           <>
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
@@ -83,10 +83,12 @@ const Navigation = () => {
             <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
           </>
         ) : (
-          <Stack.Screen name="MainApp" component={MainAppTabs} />
-        )} */}
-        <Stack.Screen name="MainApp" component={MainAppTabs} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+          <>
+            <Stack.Screen name="MainApp" component={MainAppTabs} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+          </>
+        )}
+        { /* <Stack.Screen name="MainApp" component={MainAppTabs} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
