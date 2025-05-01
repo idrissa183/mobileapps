@@ -83,8 +83,9 @@ const Navigation = () => {
             <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
           </>
         ) : (
-          <Stack.Screen name="MainApp" component={MainAppTabs} />
-          // <Stack.Screen name="Profile" component={ProfileScreen} />
+          <>
+            <Stack.Screen name="MainApp" component={MainAppTabs} />
+            <Stack.Screen name="Profile" component={ProfileScreen} /></>
         )}
         {/* <Stack.Screen name="MainApp" component={MainAppTabs} /> */}
       </Stack.Navigator>
