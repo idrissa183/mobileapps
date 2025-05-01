@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -24,9 +24,30 @@ const CardsScreen = () => {
   const cardInfoBgStyle = isDarkMode ? styles.darkCardInfoBg : styles.lightCardInfoBg;
 
   // Card data
-  const cardNumber = '4032 7782 0824 6661';
-  const cardHolder = 'Jimmy Sullivan';
-  const cvv = '***';
+  const cards = [
+    { cardNumber: '4032 7782 0824 6661', cardHolder: 'Jimmy Sullivan', cvv: '123' },
+    { cardNumber: '1234 5678 9012 3456', cardHolder: 'Sarah Connor', cvv: '456' },
+    { cardNumber: '9876 5432 1098 7654', cardHolder: 'John Doe', cvv: '789' },
+  ];
+
+  // State to track selected card and CVV visibility
+  const [selectedCard, setSelectedCard] = useState(cards[0]);
+  const [isCvvVisible, setIsCvvVisible] = useState(false);
+
+  const handleCardClick = (card: typeof cards[0]) => {
+    setSelectedCard(card);
+    setIsCvvVisible(false); // Reset CVV visibility when switching cards
+  };
+
+  const toggleCvvVisibility = () => {
+    setIsCvvVisible(!isCvvVisible);
+  };
+
+  const formatNumberWithCommas = (number: number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const balance = 1230.60; // Example balance
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
@@ -35,7 +56,7 @@ const CardsScreen = () => {
         <View style={styles.header}>
           <View>
             <Text style={[styles.currencyLabel, secondaryTextStyle]}>US Dollar</Text>
-            <Text style={[styles.balanceAmount, headerTextStyle]}>1.230,60</Text>
+            <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(balance.toFixed(2))}</Text>
           </View>
           <TouchableOpacity style={styles.topUpButton}>
             <Ionicons name="add-circle-outline" size={18} color="#111827" />
@@ -44,58 +65,55 @@ const CardsScreen = () => {
         </View>
 
         {/* Cards Section */}
-        <View style={styles.cardsContainer}>
-          {/* Card 1 */}
-          <View style={styles.cardWrapper}>
-            <View style={[styles.card, styles.blueCard]}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardName}>{cardHolder}</Text>
-                <Image 
-                  source={require('../../assets/avatars/avatar1.jpg')} 
-                  style={styles.cardLogo}
-                />
+        <ScrollView 
+          horizontal={true} 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.cardsContainer}
+          contentContainerStyle={{ paddingRight: 20 }}
+        >
+          {cards.map((card, index) => (
+            <TouchableOpacity 
+              key={index} 
+              onPress={() => handleCardClick(card)} 
+              activeOpacity={0.8}
+            >
+              <View style={[styles.cardWrapper,
+                (index % 2 === 0 ? {borderColor: "#2563EB"} : {borderColor: "#80b2e6"}),
+                (selectedCard.cardNumber === card.cardNumber ? {borderWidth: 2} : {})]}
+              >
+                <View style={[styles.card, (index % 2 === 0 ? styles.blueCard : styles.cyanCard)]}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardName}>{card.cardHolder}</Text>
+                    <Image 
+                      source={require('../../assets/avatars/avatar2.jpg')} 
+                      style={styles.cardLogo}
+                    />
+                  </View>
+                  <View style={styles.cardNumberContainer}>
+                    {card.cardNumber.split(' ').map((chunk, idx) => (
+                      <Text key={idx} style={styles.cardNumberText}>{chunk}</Text>
+                    ))}
+                  </View>
+                  <View style={styles.cardBrand}>
+                    <Text style={styles.cardBrandText}>BCD</Text>
+                    <Image 
+                      source={require('../../assets/puce.png')} 
+                      style={styles.cardPuce}
+                    />
+                    <Text></Text>
+                  </View>
+                </View>
               </View>
-              <View style={styles.cardNumberContainer}>
-                <Text style={styles.cardNumberText}>4032</Text>
-                <Text style={styles.cardNumberText}>7782</Text>
-                <Text style={styles.cardNumberText}>0824</Text>
-                <Text style={styles.cardNumberText}>6661</Text>
-              </View>
-              <View style={styles.cardBrand}>
-                <Text style={styles.cardBrandText}>BCD</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Card 2 */}
-          <View style={[styles.cardWrapper, styles.secondaryCardWrapper]}>
-            <View style={[styles.card, styles.lightBlueCard]}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardNameSecondary}>{cardHolder}</Text>
-                <Image 
-                  source={require('../../assets/avatars/avatar1.jpg')} 
-                  style={styles.cardLogo}
-                />
-              </View>
-              <View style={styles.cardNumberContainer}>
-                <Text style={styles.cardNumberTextSecondary}>4032</Text>
-                <Text style={styles.cardNumberTextSecondary}>7782</Text>
-                <Text style={styles.cardNumberTextSecondary}>0824</Text>
-                <Text style={styles.cardNumberTextSecondary}>6661</Text>
-              </View>
-              <View style={styles.cardBrand}>
-                <Text style={styles.cardBrandText}>BCD</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         {/* Card Details Section */}
         <View style={[styles.cardDetailsSection, cardDetailBgStyle]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, headerTextStyle]}>Card Detail</Text>
             <TouchableOpacity>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={styles.viewAllText}>New Card</Text>
             </TouchableOpacity>
           </View>
 
@@ -104,25 +122,36 @@ const CardsScreen = () => {
             <View style={styles.cardInfoItem}>
               <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>CVV:</Text>
               <View style={[styles.cardInfoValue, cardInfoBgStyle]}>
-                <Text style={[styles.cardCvvText, headerTextStyle]}>{cvv}</Text>
+                <Text style={[styles.cardCvvText, headerTextStyle]}>
+                {isCvvVisible ? selectedCard.cvv : '***'}
+                </Text>
+                <TouchableOpacity
+                  style={{ marginLeft: 'auto', marginTop: 0 }}
+                  onPress={toggleCvvVisibility}
+                >
+                  <Ionicons
+                    name={isCvvVisible ? "eye-outline" : "eye-off-outline"}
+                    size={18}
+                    color="#111827" />
+                </TouchableOpacity>
               </View>
             </View>
 
             <View style={styles.cardInfoItem}>
               <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>Card Number:</Text>
-              <Text style={[styles.cardInfoValueText, headerTextStyle]}>{cardNumber}</Text>
+              <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.cardNumber}</Text>
             </View>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.cardActionsContainer}>
             <TouchableOpacity style={styles.withdrawButton}>
-              <Ionicons name="wallet-outline" size={18} color="#FFFFFF" />
+              <Ionicons name="arrow-undo-outline" size={18} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Withdraw</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.transferButton}>
-              <Ionicons name="arrow-forward-outline" size={18} color="#FFFFFF" />
+              <Ionicons name="arrow-redo-outline" size={18} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Transfer</Text>
             </TouchableOpacity>
           </View>
@@ -136,6 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
+    marginHorizontal: 10,
   },
   scrollView: {
     flex: 1,
@@ -150,7 +180,6 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 16,
     backgroundColor: '#eceff3',
-    // backgroundColor: '#F3F4F6',
   },
   currencyLabel: {
     fontSize: 15,
@@ -180,18 +209,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   cardWrapper: {
-    marginBottom: 15,
-    height: 180,
-    borderRadius: 16,
+    marginRight: 15,
+    height: 340,
+    width: width * 0.6,
+    borderRadius: 22,
     overflow: 'hidden',
-  },
-  secondaryCardWrapper: {
-    position: 'absolute',
-    top: 15,
-    right: 0,
-    width: '50%',
-    height: 160,
-    zIndex: 1,
+    padding: 8,
   },
   card: {
     flex: 1,
@@ -202,8 +225,8 @@ const styles = StyleSheet.create({
   blueCard: {
     backgroundColor: '#2563EB',
   },
-  lightBlueCard: {
-    backgroundColor: '#93C5FD',
+  cyanCard: {
+    backgroundColor: '#80b2e6',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -213,44 +236,44 @@ const styles = StyleSheet.create({
   },
   cardName: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  cardNameSecondary: {
-    color: '#1E3A8A',
-    fontSize: 12,
+    fontSize: 20,
     fontWeight: '500',
   },
   cardLogo: {
     width: 40,
-    height: 24,
+    height: 40,
+    borderRadius: 20,
     resizeMode: 'contain',
   },
   cardNumberContainer: {
-    flexDirection: 'row',
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
+    alignItems: 'flex-end',
     marginBottom: 10,
   },
   cardNumberText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
     letterSpacing: 1,
-  },
-  cardNumberTextSecondary: {
-    color: '#1E3A8A',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 1,
+    marginVertical: 5,
   },
   cardBrand: {
-    alignItems: 'flex-start',
+    display: 'flex',
+    flexDirection: 'row',
   },
   cardBrandText: {
     color: 'white',
     fontSize: 30,
     fontWeight: 'bold',
     letterSpacing: 2,
+  },
+  cardPuce: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+    marginLeft: "15%",
   },
   cardDetailsSection: {
     flex: 1,
@@ -265,12 +288,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   viewAllText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#2563EB',
+    textDecorationLine: 'underline',
   },
   cardInfoContainer: {
     marginBottom: 20,
@@ -283,6 +307,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardInfoValue: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
     width: 80,
     padding: 12,
     borderRadius: 8,
@@ -300,7 +327,6 @@ const styles = StyleSheet.create({
   cardActionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
   },
   withdrawButton: {
     backgroundColor: '#2563EB',
@@ -330,7 +356,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   
-  // Styles pour le mode clair
+  // Styles for light mode
   lightContainer: {
     backgroundColor: '#F9FAFB',
   },
@@ -347,7 +373,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   
-  // Styles pour le mode sombre
+  // Styles for dark mode
   darkContainer: {
     backgroundColor: '#111827',
   },

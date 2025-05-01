@@ -33,7 +33,7 @@ const HistoryScreen = () => {
       date: '30 Apr 2025', 
       amount: '+$600.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 2, 
@@ -43,7 +43,7 @@ const HistoryScreen = () => {
       date: '27 Apr 2025', 
       amount: '+$8.50', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg') 
+      avatar: require('../../assets/avatars/avatar2.jpg') 
     },
     { 
       id: 3, 
@@ -53,7 +53,7 @@ const HistoryScreen = () => {
       date: '25 Apr 2025', 
       amount: '-$10.50', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 4, 
@@ -63,7 +63,7 @@ const HistoryScreen = () => {
       date: '20 Apr 2025', 
       amount: '-$200.00', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 5, 
@@ -73,7 +73,7 @@ const HistoryScreen = () => {
       date: '15 Apr 2025', 
       amount: '-$9.99', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 6, 
@@ -83,7 +83,7 @@ const HistoryScreen = () => {
       date: '10 Apr 2025', 
       amount: '+$2,450.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 7, 
@@ -93,7 +93,7 @@ const HistoryScreen = () => {
       date: '5 Apr 2025', 
       amount: '+$75.00', 
       isPositive: true,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
     { 
       id: 8, 
@@ -103,7 +103,7 @@ const HistoryScreen = () => {
       date: '2 Apr 2025', 
       amount: '-$12.75', 
       isPositive: false,
-      avatar: require('../../assets/avatars/avatar1.jpg')
+      avatar: require('../../assets/avatars/avatar2.jpg')
     },
   ];
 
@@ -140,7 +140,7 @@ const HistoryScreen = () => {
           <Text style={[styles.headerTitle, headerTextStyle]}>Transaction History</Text>
           <TouchableOpacity>
             <Image 
-              source={require('../../assets/avatars/avatar1.jpg')}
+              source={require('../../assets/avatars/avatar2.jpg')}
               style={styles.avatar}
             />
           </TouchableOpacity>
@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
   // Base styles
   container: {
     flex: 1,
+    paddingTop: 20,
   },
   scrollView: {
     flex: 1,

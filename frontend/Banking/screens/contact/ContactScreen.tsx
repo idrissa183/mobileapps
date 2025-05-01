@@ -34,7 +34,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (70) 70-62-47',
       email: 'alberto@gmail.com',
       isFrequent: true,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 5,
       totalSent: '$1,250.00',
       totalReceived: '$600.00'
@@ -45,7 +45,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (56) 56-62-47',
       email: 'louis@gmail.com',
       isFrequent: true,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 3,
       totalSent: '$85.00',
       totalReceived: '$120.00'
@@ -56,7 +56,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (78) 78-62-47',
       email: 'marina@gmail.com',
       isFrequent: true,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 8,
       totalSent: '$350.00',
       totalReceived: '$425.00'
@@ -67,7 +67,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (77) 77-62-47',
       email: 'john@gmail.com',
       isFrequent: false,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 2,
       totalSent: '$50.00',
       totalReceived: '$0.00'
@@ -78,7 +78,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (60) 60-62-47',
       email: 'emma@gmail.com',
       isFrequent: false,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 1,
       totalSent: '$75.00',
       totalReceived: '$0.00'
@@ -89,7 +89,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (73) 73-62-47',
       email: 'thomas@gmail.com',
       isFrequent: false,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 4,
       totalSent: '$230.00',
       totalReceived: '$180.00'
@@ -100,7 +100,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (79) 79-62-47',
       email: 'sophia@gmail.com',
       isFrequent: false,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 2,
       totalSent: '$120.00',
       totalReceived: '$45.00'
@@ -111,7 +111,7 @@ const ContactScreen = () => {
       phoneNumber: '+226 (76) 76-62-47',
       email: 'robert@gmail.com',
       isFrequent: false,
-      avatar: require('../../assets/avatars/avatar1.jpg'),
+      avatar: require('../../assets/avatars/avatar2.jpg'),
       transactions: 3,
       totalSent: '$200.00',
       totalReceived: '$75.00'
@@ -269,6 +269,7 @@ const styles = StyleSheet.create({
   // Base styles
   container: {
     flex: 1,
+    paddingTop: 20,
   },
   scrollView: {
     flex: 1,
