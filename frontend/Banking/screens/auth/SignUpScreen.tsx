@@ -7,7 +7,8 @@ import {
   Image,
   Modal,
   FlatList,
-  StyleSheet
+  StyleSheet,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -21,6 +22,7 @@ import Loader from '../../components/common/Loader';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
 import { RootStackParamList } from '../../App';
+import authService from '../../services/authService';
 
 type SignUpScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -95,7 +97,7 @@ const SignUpScreen = () => {
     return re.test(email);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async() => {
     const newErrors: FormErrors = {
       username: '',
       email: '',
@@ -156,10 +158,30 @@ const SignUpScreen = () => {
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        full_name: formData.fullName,
+        password: formData.password,
+        phone: formData.phoneNumber,
+        uses_banking_app: true,
+        uses_student_app: false,
+        uses_clothes_app: false,
+      };
+
+      await authService.register(userData);
+
+      navigation.navigate('OTPVerification', {
+        email: formData.email,
+        mode: 'register'
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || t('registrationFailed', 'auth');
+      Alert.alert(t('error', 'common'), errorMessage);
+    } finally {
       setIsLoading(false);
-      navigation.navigate('OTPVerification');
-    }, 1500);
+    }
   };
 
   const openLanguageModal = () => {
