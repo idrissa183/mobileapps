@@ -107,7 +107,7 @@ const SettingsScreen = ({ navigation }) => {
     setLangModalVisible(true);
   };
 
-  const changeLanguage = (langCode) => {
+  const changeLanguage = (langCode: any) => {
     setLanguage(langCode);
     setLangModalVisible(false);
   };
