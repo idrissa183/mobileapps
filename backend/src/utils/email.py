@@ -64,7 +64,7 @@ def send_otp_email(recipient_email: str, recipient_name: str, otp_code: str) -> 
             .replace("{{name}}", recipient_name)
             .replace("{{otp_code}}", otp_code)
             .replace("{{app_name}}", settings.APP_NAME)
-            .replace("{{valid_minutes}}", "15")
+            .replace("{{valid_minutes}}", "1")
         )
 
         return send_email(recipient_email, subject, html_content)

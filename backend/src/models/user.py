@@ -24,7 +24,7 @@ class User(Document):
     """Base User model for all applications"""
     username: Indexed(str, unique=True)
     email: Indexed(EmailStr, unique=True)
-    full_name: str
+    full_name: Indexed(str)
     hashed_password: str
     profile_image: Optional[str] = None
     phone: Optional[str] = None
@@ -53,6 +53,10 @@ class User(Document):
 
     class Settings:
         name = "users"
+        indexes = [
+            [("status", 1), ("is_email_verified", 1), ("uses_banking_app", 1)],
+            [("username", "text"), ("full_name", "text"), ("email", "text")]
+        ]
 
     class Config:
         use_enum_values = True

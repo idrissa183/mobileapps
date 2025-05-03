@@ -77,9 +77,9 @@ const SignInScreen = () => {
     try {
       await login(username, password);
 
-      if (!needsOtpVerification) {
-        navigation.navigate('MainApp');
-      }
+      // if (!needsOtpVerification) {
+      //   navigation.navigate('MainApp');
+      // }
     } catch (error: any) {
       if (needsOtpVerification && pendingEmail) {
         navigation.navigate('OTPVerification', {
@@ -292,7 +292,7 @@ const SignInScreen = () => {
       </Modal>
 
       {/* Loading overlay */}
-      {isLoading && <Loader fullScreen />}
+      {isLoading}
     </SafeAreaWrapper>
   );
 };

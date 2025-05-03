@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr, field_validator
 
+from ...models.banking import Account, Currency
 from ...models.blacklisted_token import BlacklistedToken
 from ...models.user import User, UserRole, UserStatus
 from ...config.settings import get_settings
@@ -243,6 +244,33 @@ def check_user_role(required_roles: List[UserRole]):
     return _check_user_role
 
 
+async def create_bank_account_for_user(user: User):
+    """Créer un compte bancaire pour un utilisateur"""
+    try:
+        existing_account = await Account.find_one(Account.user == user)
+        if existing_account:
+            logger.info(f"User {user.id} already has a bank account")
+            return existing_account
+
+        user_id_str = str(user.id)
+        account_number = f"AC{datetime.now(UTC).strftime('%Y%m%d')}{user_id_str[-6:].upper()}"
+        account = Account(
+            user=user,
+            account_number=account_number,
+            balance=0.0,
+            currency=Currency.USD,
+            is_active=True
+        )
+        await account.insert()
+        logger.info(f"Bank account created for user {user.id}")
+        return account
+
+    except Exception as e:
+        logger.error(f"Error creating bank account for user {user.id}: {str(e)}")
+        # Re-lever l'exception pour que l'erreur soit visible
+        raise
+
+
 @router.post("/register", response_model=Dict[str, str])
 async def register_user(user_data: UserCreate,  background_tasks: BackgroundTasks):
     # Check if username or email already exists
@@ -277,7 +305,7 @@ async def register_user(user_data: UserCreate,  background_tasks: BackgroundTask
         roles.append(UserRole.STUDENT)
 
     otp_code = generate_otp()
-    otp_expiry = datetime.now(UTC) + timedelta(minutes=15)
+    otp_expiry = datetime.now(UTC) + timedelta(minutes=1)
 
     new_user = User(
         username=user_data.username,
@@ -320,7 +348,7 @@ async def register_user(user_data: UserCreate,  background_tasks: BackgroundTask
 
 
 @router.post("/verify-otp", response_model=UserResponse)
-async def verify_otp(verification_data: OTPVerification):
+async def verify_otp(verification_data: OTPVerification, background_tasks: BackgroundTasks):
     """Vérifier le code OTP et activer le compte utilisateur"""
 
     user = await User.find_one(User.email == verification_data.email)
@@ -368,6 +396,9 @@ async def verify_otp(verification_data: OTPVerification):
         user.updated_at = datetime.now(UTC)
 
         await user.save()
+
+        if user.uses_banking_app and UserRole.BANKING_USER in user.roles:
+            background_tasks.add_task(create_bank_account_for_user, user)
 
         return UserResponse(
             id=str(user.id),
@@ -774,7 +805,7 @@ async def resend_otp(email_data: PasswordReset, background_tasks: BackgroundTask
 
         # Generate new OTP
         otp_code = generate_otp()
-        otp_expiry = datetime.now(UTC) + timedelta(minutes=15)
+        otp_expiry = datetime.now(UTC) + timedelta(minutes=1)
 
         # Update user with new OTP
         user.verification_code = otp_code

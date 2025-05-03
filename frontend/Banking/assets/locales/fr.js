@@ -81,7 +81,10 @@ export default {
     continue: "Continuer",
     goBack: "Retour",
     error: "Erreur",
-    success: "Succès"
+    success: "Succès",
+    loginFailed: "Échec de la connexion",
+    incorrectCredentials: "Email ou mot de passe incorrect.",
+    accountInactive: "Votre compte est inactif. Veuillez contacter le support.",
   },
   common: {
     loading: 'Chargement...',
@@ -96,7 +99,9 @@ export default {
     language: 'Langue',
     lightMode: 'Mode Clair',
     systemDefault: 'Paramètres Système',
-    settings: 'Paramètres'
+    settings: 'Paramètres',
+    serverError: "Une erreur serveur est survenue. Veuillez réessayer plus tard.",
+    networkError: "Erreur réseau. Vérifiez votre connexion internet.",
   },
   home: {
     title: 'Accueil',
@@ -255,5 +260,69 @@ export default {
     locationServicesEnabled: "La localisation est activée",
     locationServicesDisabled: "La localisation est désactivée",
     ok: "OK"
+  },
+
+  transactions: {
+    title: 'Transactions',
+    all: 'Toutes',
+    income: 'Revenus',
+    expense: 'Dépenses',
+    deposit: 'Dépôt',
+    withdrawal: 'Retrait',
+    transfer: 'Virement',
+    pending: 'En attente',
+    completed: 'Terminées',
+    failed: 'Échouées',
+    noTransactions: 'Aucune transaction pour le moment',
+    noRecentTransactions: 'Aucune transaction récente',
+    loadingTransactions: 'Chargement des transactions...',
+    today: 'Aujourd\'hui',
+    yesterday: 'Hier',
+    unknown: 'Inconnu',
+    transferTo: 'Virement',
+    transferFrom: 'Virement',
+    deposit: 'Dépôt',
+    withdrawal: 'Retrait',
+    viewAll: 'Voir tout',
+    noMoreTransactions: 'Plus de transactions',
+    // New keys to add:
+    transactionDetail: 'Transaction Detail',
+    details: 'Details',
+    transactionType: 'Transaction Type',
+    date: 'Date',
+    transactionId: 'Transaction ID',
+    recipient: 'Recipient',
+    sender: 'Sender',
+    downloadReceipt: 'Download Receipt',
+    shareDetails: 'Share Details',
+    cancelTransaction: 'Cancel Transaction',
+
+    // Status translations (if not already present)
+    completed: 'Completed',
+    pending: 'Pending',
+    failed: 'Failed',
+
+    // Transaction type translations (if not already present)
+    deposit: 'Deposit',
+    withdrawal: 'Withdrawal',
+    transfer: 'Transfer'
+
+  },
+  common: {
+    today: 'Aujourd\'hui',
+    yesterday: 'Hier',
+    unknown: 'Inconnu',
+    viewAll: 'Voir tout',
+  },
+  home: {
+    transactions: 'Transactions',
+    inviteYour: 'Invitez vos',
+    friendNow: 'amis maintenant !',
+    earn100: 'Gagnez 100$',
+  },
+  history: {
+    transactionHistory: 'Historique des transactions',
+    searchTransactions: 'Rechercher des transactions',
+    noMoreTransactions: 'Plus de transactions',
   },
 };

@@ -21,6 +21,7 @@ interface TranslationsType {
   transactions: Record<string, any>;
   transfer: Record<string, any>;
   profile: Record<string, any>;
+  history: Record<string, any>;
 }
 
 const typedLocales: Record<LanguageCode, TranslationsType> = locales as Record<LanguageCode, TranslationsType>;
@@ -29,7 +30,7 @@ interface LanguageContextType {
   language: LanguageCode;
   translations: TranslationsType;
   setLanguage: (language: LanguageCode) => void;
-  t: (key: string, section?: string) => string;
+  t: (key: string, section?: string, params?: Record<string, string>) => string;
 }
 
 const defaultLanguage: LanguageCode = 'en';
@@ -37,7 +38,7 @@ const defaultLanguage: LanguageCode = 'en';
 export const LanguageContext = createContext<LanguageContextType>({
   language: defaultLanguage,
   translations: typedLocales[defaultLanguage],
-  setLanguage: () => {},
+  setLanguage: () => { },
   t: (key: string, section?: string) => key,
 });
 
@@ -64,36 +65,47 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setLanguage = (languageCode: LanguageCode) => {
     setLanguageState(languageCode);
     setTranslations(typedLocales[languageCode]);
-    
+
     AsyncStorage.setItem('language', languageCode);
   };
 
-  const t = (key: string, section?: string): string => {
+  const t = (key: string, section?: string, params?: Record<string, string>): string => {
     try {
+      let translatedText: string;
+
       if (section) {
         const sectionData = translations[section];
         if (!sectionData) return key;
-        
+
         const keys = key.split('.');
         let value: any = sectionData;
-        
+
         for (const k of keys) {
           if (!value || typeof value[k] === 'undefined') return key;
           value = value[k];
         }
-        
-        return typeof value === 'string' ? value : key;
+
+        translatedText = typeof value === 'string' ? value : key;
       } else {
         const keys = key.split('.');
         let value: any = translations;
-        
+
         for (const k of keys) {
           if (!value || typeof value[k] === 'undefined') return key;
           value = value[k];
         }
-        
-        return typeof value === 'string' ? value : key;
+
+        translatedText = typeof value === 'string' ? value : key;
       }
+
+      if (params && translatedText) {
+        Object.keys(params).forEach(paramKey => {
+          const placeholder = `{{${paramKey}}}`;
+          translatedText = translatedText.replace(placeholder, params[paramKey]);
+        });
+      }
+
+      return translatedText;
     } catch (error) {
       console.error('Translation error:', error);
       return key;

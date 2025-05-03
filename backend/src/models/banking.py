@@ -7,70 +7,45 @@ from pydantic import Field, field_validator
 
 from ..models.user import User
 
-
-class AccountType(str, Enum):
-    CHECKING = "checking"
-    SAVINGS = "savings"
-    CREDIT = "credit"
-    INVESTMENT = "investment"
+class Currency(str, Enum):
+    """Devises supportées par l'application bancaire"""
+    USD = "USD"  # Dollar américain (devise par défaut)
+    EUR = "EUR"  # Euro
+    XOF = "XOF"  # Franc CFA (BCEAO)
 
 
 class TransactionType(str, Enum):
-    DEPOSIT = "deposit"
-    WITHDRAWAL = "withdrawal"
-    TRANSFER = "transfer"
-    PAYMENT = "payment"
-    FEE = "fee"
-    INTEREST = "interest"
-    REFUND = "refund"
+    """Types de transactions supportés"""
+    DEPOSIT = "deposit"     # Dépôt
+    WITHDRAWAL = "withdrawal"  # Retrait
+    TRANSFER = "transfer"   # Transfert entre utilisateurs
 
 
 class TransactionStatus(str, Enum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+    """États possibles d'une transaction"""
+    PENDING = "pending"     # En attente
+    COMPLETED = "completed" # Terminée
+    FAILED = "failed"       # Échouée
 
 
 class CardType(str, Enum):
-    DEBIT = "debit"
-    CREDIT = "credit"
-    VIRTUAL = "virtual"
+    """Types de cartes disponibles"""
+    DEBIT = "debit"     # Carte de débit
+    VIRTUAL = "virtual" # Carte virtuelle
 
 
 class CardStatus(str, Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    BLOCKED = "blocked"
-    EXPIRED = "expired"
-
-
-class Currency(str, Enum):
-    """Devises supportées par l'application bancaire"""
-    USD = "USD"  # Dollar américain
-    EUR = "EUR"  # Euro
-    GBP = "GBP"  # Livre sterling
-    JPY = "JPY"  # Yen japonais
-    CHF = "CHF"  # Franc suisse
-    CAD = "CAD"  # Dollar canadien
-    AUD = "AUD"  # Dollar australien
-    CNY = "CNY"  # Yuan chinois
-    HKD = "HKD"  # Dollar de Hong Kong
-    SGD = "SGD"  # Dollar de Singapour
-    XOF = "XOF"  # Franc CFA (BCEAO)
-    AOA = "AOA"  # Kwanza angolais
-    NGN = "NGN"  # Naira nigérian
-    ZAR = "ZAR"  # Rand sud-africain
-    EGP = "EGP"  # Livre égyptienne
-    MAD = "MAD"  # Dirham marocain
-    KES = "KES"  # Shilling kényan
-    GHS = "GHS"  # Cedi ghanéen
+    """États possibles d'une carte"""
+    ACTIVE = "active"       # Active
+    INACTIVE = "inactive"   # Inactive
+    BLOCKED = "blocked"     # Bloquée
+    EXPIRED = "expired"     # Expirée
 
 
 class ExchangeRate(Document):
     """Modèle pour stocker les taux de change"""
-    base_currency: str
-    rates: Dict[str, float]
+    base_currency: Currency = Currency.USD
+    rates: Dict[str, float]  # {"EUR": 0.93, "XOF": 607.5}
     last_updated: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     class Settings:
@@ -80,88 +55,56 @@ class ExchangeRate(Document):
         use_enum_values = True
 
 
-class CurrencyConversion(Document):
-    """Modèle pour stocker l'historique des conversions de devises"""
-    user_id: str
-    from_currency: str
-    to_currency: str
-    amount: float
-    converted_amount: float
-    exchange_rate: float
-    related_transaction_id: Optional[str] = None
-    conversion_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-    class Settings:
-        name = "currency_conversions"
-
-    class Config:
-        use_enum_values = True
-
-
 class Account(Document):
-    """Bank account model for the banking app"""
+    """Modèle de compte bancaire (un seul compte courant par utilisateur)"""
     user: Link[User]
     account_number: Indexed(str, unique=True)
-    account_name: str
-    account_type: AccountType
+    account_name: str = Field(default="Compte Principal")
     balance: float = 0.0
-    currency: str = "USD"
-    preferred_currencies: List[str] = Field(default=["USD"])  # Devises préférées pour ce compte
-    currency_conversion_fee: float = 0.025
-    is_primary: bool = False
+    currency: Currency = Currency.USD
     is_active: bool = True
-
-    # Credit account fields
-    credit_limit: Optional[float] = None
-    available_credit: Optional[float] = None
-    interest_rate: Optional[float] = None
-
-    # Savings account fields
-    interest_rate_savings: Optional[float] = None
-
-    created_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
+    is_primary: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_transaction: Optional[datetime] = None
 
     class Settings:
         name = "accounts"
+        indexes = [
+            [("user.id", 1)],
+            [("account_number", 1)],
+        ]
 
     class Config:
         use_enum_values = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
 
-    @field_validator('account_number')
-    @classmethod
-    def validate_account_number(cls, v):
-        if not v or len(v) < 8:
-            raise ValueError('Account number must be at least 8 characters')
-        return v
+    async def get_user(self) -> User:
+        """Récupérer l'utilisateur lié à ce compte"""
+        return await self.user.fetch()
 
 
 class Transaction(Document):
-    """Transaction model for the banking app"""
+    """Modèle de transaction pour l'application bancaire"""
     transaction_id: Indexed(str, unique=True)
     account: Link[Account]
     transaction_type: TransactionType
     amount: float
-    currency: str = "USD"
+    currency: Currency = Currency.USD
     description: str
-    category: Optional[str] = None  # e.g., "groceries", "entertainment", "utilities"
     status: TransactionStatus = TransactionStatus.PENDING
 
-    # Transfer specific fields
+    # Champs spécifiques aux transferts
     recipient_account: Optional[Link[Account]] = None
     recipient_name: Optional[str] = None
     recipient_account_number: Optional[str] = None
 
-    # Location data
-    merchant_name: Optional[str] = None
-    merchant_category: Optional[str] = None
-    location: Optional[str] = None
-
-    # Timestamps
-    transaction_date: datetime = Field(default_factory=lambda : datetime.now(UTC))
-    created_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
+    # Horodatage
+    transaction_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     class Settings:
         name = "transactions"
@@ -170,25 +113,9 @@ class Transaction(Document):
         use_enum_values = True
 
 
-class TransferBeneficiary(Document):
-    """Saved beneficiary for transfers"""
-    user: Link[User]
-    beneficiary_name: str
-    account_number: str
-    bank_name: Optional[str] = None
-    bank_code: Optional[str] = None
-    is_favorite: bool = False
-    created_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
-
-    class Settings:
-        name = "beneficiaries"
-
-
 class Card(Document):
-    """Bank card model for the banking app"""
+    """Modèle de carte bancaire"""
     user: Link[User]
-    account: Link[Account]
     card_number: Indexed(str, unique=True)
     card_type: CardType
     card_name: str
@@ -198,12 +125,12 @@ class Card(Document):
     daily_limit: float
     status: CardStatus = CardStatus.ACTIVE
 
-    # Virtual card specific fields
+    # Champs spécifiques aux cartes virtuelles
     is_virtual: bool = False
     purpose: Optional[str] = None
 
-    created_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda : datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     class Settings:
         name = "cards"

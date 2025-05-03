@@ -19,41 +19,38 @@ import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Linking } from 'react-native'; 
 import useAuth from "../../hooks/useAuth";
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MainTabParamList } from '../../App';
 
 // Définition des langues disponibles
 const languages = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
   { id: 'fr', name: 'Français', flag: require('../../assets/flags/france.png') },
 ];
+type Props = NativeStackScreenProps<MainTabParamList, 'Settings'>;
 
-const SettingsScreen = ({ navigation }) => {
-  // Utilisation correcte du hook useTheme
+const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { isDarkMode, toggleTheme, themeMode, setThemeMode, theme } = useTheme();
   const { t, language, setLanguage } = useTranslation();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
-  const [locationServiceStatus, setLocationServiceStatus] = useState('unknown'); // 'unknown', 'granted', 'denied'
+  const [locationServiceStatus, setLocationServiceStatus] = useState('unknown');
   const { resetPassword, logout } = useAuth();
 
 
-  // Vérifier et demander les permissions de localisation au chargement
   useEffect(() => {
     checkLocationPermission();
   }, []);
 
-  // Fixed openURL function using expo-linking with better error handling
   const openURL = async (url) => {
-    console.log('Attempting to open URL:', url); // Debug log
     
     try {
       const canOpen = await Linking.canOpenURL(url);
       
       if (canOpen) {
         await Linking.openURL(url);
-        console.log('URL opened successfully:', url); // Debug log
       } else {
-        console.log('Cannot open URL:', url); // Debug log
         Alert.alert(
           t('error', 'common'),
           t('cannotOpenLink', 'settings'),
@@ -61,7 +58,6 @@ const SettingsScreen = ({ navigation }) => {
         );
       }
     } catch (error) {
-      console.error('Error opening URL:', error);
       Alert.alert(
         t('error', 'common'),
         `${t('linkError', 'settings')}: ${error.message}`,
@@ -79,7 +75,7 @@ const SettingsScreen = ({ navigation }) => {
       setLocationServiceStatus(status);
       setLocationEnabled(status === 'granted');
     } catch (error) {
-      console.log('Error checking location permissions', error);
+      // console.log('Error checking location permissions', error);
     }
   };
   
@@ -90,7 +86,7 @@ const SettingsScreen = ({ navigation }) => {
       setLocationServiceStatus(status);
       return status === 'granted';
     } catch (error) {
-      console.log('Error requesting location permissions', error);
+      // console.log('Error requesting location permissions', error);
       return false;
     }
   };
@@ -127,7 +123,6 @@ const SettingsScreen = ({ navigation }) => {
           text: t('light', 'settings'), 
           onPress: () => {
             setThemeMode('light');
-            // Feedback visuel pour confirmer le changement
             Alert.alert(t('themeChanged', 'settings'), t('lightThemeApplied', 'settings'));
           } 
         },
@@ -150,22 +145,18 @@ const SettingsScreen = ({ navigation }) => {
     );
   };
 
-  // Fonction simple pour basculer directement entre clair et sombre
   const handleQuickToggleTheme = () => {
     toggleTheme();
-    // Le feedback visuel n'est pas nécessaire ici car le changement est immédiatement visible
   };
 
   // Gestion de la déconnexion
   const handleLogout  = async () => {
     try {
-      // Appel à ta fonction de logout depuis le contexte ou un service
       await logout();
   
-      // Redirige vers l'écran de connexion ou d'accueil
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }], // Remplace 'Login' si ton écran a un autre nom
+        routes: [{ name: 'Login' }],
       });
     } catch (error: any) {
       if (error.response) {
@@ -269,7 +260,6 @@ const SettingsScreen = ({ navigation }) => {
       value: locationEnabled,
       onValueChange: async (value) => {
         if (value && locationServiceStatus !== 'granted') {
-          // Si l'utilisateur active la localisation mais que la permission n'est pas accordée
           const granted = await requestLocationPermission();
           setLocationEnabled(granted);
           
@@ -287,7 +277,6 @@ const SettingsScreen = ({ navigation }) => {
             );
           }
         } else if (!value) {
-          // Si l'utilisateur désactive la localisation
           setLocationEnabled(false);
           Alert.alert(
             t('locationUpdated', 'settings'),
@@ -295,7 +284,6 @@ const SettingsScreen = ({ navigation }) => {
             [{ text: t('ok', 'common') }]
           );
         } else {
-          // Si la permission est déjà accordée et que l'utilisateur active la localisation
           setLocationEnabled(true);
           Alert.alert(
             t('locationUpdated', 'settings'),
@@ -310,8 +298,7 @@ const SettingsScreen = ({ navigation }) => {
       title: t('privacyPolicy', 'settings'),
       subtitle: t('privacyPolicyDescription', 'settings'),
       onPress: () => {
-        console.log('Privacy Policy pressed'); // Debug log
-        // Ouvrir directement le lien sans la alerte de confirmation
+        // console.log('Privacy Policy pressed'); // Debug log
         openURL('https://walkerstanislas.github.io/politique-confidentialite-app-bank/');
       }
     },
@@ -320,7 +307,7 @@ const SettingsScreen = ({ navigation }) => {
       title: t('termsOfUse', 'settings'),
       subtitle: t('termsOfUseDescription', 'settings'),
       onPress: () => {
-        console.log('Terms of Use pressed'); // Debug log
+        // console.log('Terms of Use pressed'); // Debug log
         // Ouvrir directement le lien sans la alerte de confirmation
         openURL('https://walkerstanislas.github.io/politique-confidentialite-app-bank/');
       }
@@ -333,8 +320,6 @@ const SettingsScreen = ({ navigation }) => {
       title: t('contactSupport', 'settings'),
       subtitle: t('contactSupportDescription', 'settings'),
       onPress: () => {
-        console.log('Contact Support pressed'); // Debug log
-        // Ouvrir directement le client email sans la alerte de confirmation
         openURL('mailto:walkercompaore972@gmail.com' + encodeURIComponent(t('supportRequestSubject', 'settings')));
       }
     },
@@ -343,10 +328,8 @@ const SettingsScreen = ({ navigation }) => {
       title: t('rateApp', 'settings'),
       subtitle: t('rateAppDescription', 'settings'),
       onPress: () => {
-        console.log('Rate App pressed'); // Debug log
-        // Détecter la plateforme et ouvrir le magasin approprié
-        const APP_STORE_ID = 'YOUR_APP_ID'; // À remplacer par votre ID App Store
-        const PLAY_STORE_ID = 'YOUR_PACKAGE_NAME'; // À remplacer par votre ID Google Play
+        const APP_STORE_ID = ''; 
+        const PLAY_STORE_ID = '';
         
         if (Platform.OS === 'ios') {
           openURL(`itms-apps://itunes.apple.com/app/id${APP_STORE_ID}?action=write-review`);
@@ -357,7 +340,6 @@ const SettingsScreen = ({ navigation }) => {
     }
   ];
 
-  // Fonction d'aide pour obtenir le nom du mode de thème traduit
   const getThemeModeName = () => {
     switch(themeMode) {
       case 'light': return t('themeLight', 'settings');
@@ -405,7 +387,6 @@ const SettingsScreen = ({ navigation }) => {
             value={notificationsEnabled}
             onValueChange={(value) => {
               setNotificationsEnabled(value);
-              // Dans une application réelle, vous devriez demander la permission de notification ici
               Alert.alert(
                 t('notificationsUpdated', 'settings'),
                 value ? t('notificationsEnabledMessage', 'settings') : t('notificationsDisabledMessage', 'settings'),
@@ -578,7 +559,7 @@ const SettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 30,
   },
   scrollView: {
     flex: 1,
@@ -672,7 +653,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoutButtonDark: {
-    backgroundColor: '#FF453A', // Variante plus foncée pour le mode sombre
+    backgroundColor: '#FF453A',
   },
   logoutText: {
     color: 'white',
@@ -774,7 +755,6 @@ const styles = StyleSheet.create({
   languageText: {
     flex: 1,
   },
-  // Style pour le sélecteur de langue dans le menu
   languageSelector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -787,7 +767,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 8,
   },
-  // Nouveaux styles pour le sélecteur de thème
   themeSelector: {
     flexDirection: 'row',
     alignItems: 'center',

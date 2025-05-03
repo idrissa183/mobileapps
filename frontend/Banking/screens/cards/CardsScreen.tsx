@@ -165,7 +165,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
-    marginHorizontal: 10,
   },
   scrollView: {
     flex: 1,
