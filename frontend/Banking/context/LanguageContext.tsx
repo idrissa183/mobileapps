@@ -22,6 +22,8 @@ interface TranslationsType {
   transfer: Record<string, any>;
   profile: Record<string, any>;
   history: Record<string, any>;
+  currency: Record<string, any>;
+  contacts: Record<string, any>;
 }
 
 const typedLocales: Record<LanguageCode, TranslationsType> = locales as Record<LanguageCode, TranslationsType>;

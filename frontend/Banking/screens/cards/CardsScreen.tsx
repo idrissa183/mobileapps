@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -7,15 +7,19 @@ import {
   StyleSheet, 
   Image, 
   TouchableOpacity, 
-  Dimensions 
+  Dimensions, 
+  ActivityIndicator
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
+import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
+import useTranslation from '../../hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
-const CardsScreen = () => {
+const CardsScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
@@ -23,20 +27,65 @@ const CardsScreen = () => {
   const cardDetailBgStyle = isDarkMode ? styles.darkCardDetailBg : styles.lightCardDetailBg;
   const cardInfoBgStyle = isDarkMode ? styles.darkCardInfoBg : styles.lightCardInfoBg;
 
-  // Card data
-  const cards = [
-    { cardNumber: '4032 7782 0824 6661', cardHolder: 'Jimmy Sullivan', cvv: '123' },
-    { cardNumber: '1234 5678 9012 3456', cardHolder: 'Sarah Connor', cvv: '456' },
-    { cardNumber: '9876 5432 1098 7654', cardHolder: 'John Doe', cvv: '789' },
-  ];
-
-  // State to track selected card and CVV visibility
-  const [selectedCard, setSelectedCard] = useState(cards[0]);
+  // États
+  const [cards, setCards] = useState<Card[]>([]);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isCvvVisible, setIsCvvVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
-  const handleCardClick = (card: typeof cards[0]) => {
+  // Récupération des cartes au chargement
+  useEffect(() => {
+    fetchCards();
+  }, []);
+
+  // Fonction pour récupérer les cartes
+  const fetchCards = async () => {
+    setLoading(true);
+    try {
+      const fetchedCards = await cardService.getAllCards();
+      setCards(fetchedCards);
+      
+      // Sélectionne la première carte par défaut s'il y en a une
+      if (fetchedCards.length > 0 && !selectedCard) {
+        setSelectedCard(fetchedCards[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching cards:', error);
+      // Vous pourriez ajouter une notification d'erreur ici
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour créer une nouvelle carte
+  const createNewCard = async () => {
+    setCreating(true);
+    try {
+      const newCardData: CardCreateRequest = {
+        card_name: t('cards.defaultNewCardName'),
+        card_type: CardType.DEBIT,
+        is_contactless: true,
+        is_virtual: false
+      };
+      
+      const newCard = await cardService.createCard(newCardData);
+      
+      // Ajouter la nouvelle carte et la sélectionner
+      setCards(prevCards => [...prevCards, newCard]);
+      setSelectedCard(newCard);
+      
+    } catch (error) {
+      console.error('Error creating new card:', error);
+      // Vous pourriez ajouter une notification d'erreur ici
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleCardClick = (card: Card) => {
     setSelectedCard(card);
-    setIsCvvVisible(false); // Reset CVV visibility when switching cards
+    setIsCvvVisible(false); // Réinitialiser la visibilité du CVV lors du changement de carte
   };
 
   const toggleCvvVisibility = () => {
@@ -47,7 +96,29 @@ const CardsScreen = () => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  const balance = 1230.60; // Example balance
+  // Formatage d'un numéro de carte masqué
+  const formatCardNumber = (cardNumber: string) => {
+    // Si la carte est masquée (comme "************8898"), on peut la formater
+    if (cardNumber.startsWith('*')) {
+      const lastFour = cardNumber.slice(-4);
+      return `**** **** **** ${lastFour}`;
+    }
+    
+    // Sinon, on retourne la carte formatée
+    return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+  };
+
+  const balance = 1230.60; // Exemple de solde - À remplacer par des données réelles
+
+  // Chargement initial
+  if (loading && cards.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, containerStyle, styles.centerContainer]}>
+        <ActivityIndicator size="large" color="#2563EB" />
+        <Text style={[styles.loadingText, headerTextStyle]}>{t('common.loading')}</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
@@ -55,107 +126,133 @@ const CardsScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.currencyLabel, secondaryTextStyle]}>US Dollar</Text>
+            <Text style={[styles.currencyLabel, secondaryTextStyle]}>{t('currency.usd')}</Text>
             <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(balance.toFixed(2))}</Text>
           </View>
           <TouchableOpacity style={styles.topUpButton}>
             <Ionicons name="add-circle-outline" size={18} color="#111827" />
-            <Text style={styles.topUpText}>Top Up</Text>
+            <Text style={styles.topUpText}>{t('cards.topUp')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Cards Section */}
-        <ScrollView 
-          horizontal={true} 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.cardsContainer}
-          contentContainerStyle={{ paddingRight: 20 }}
-        >
-          {cards.map((card, index) => (
-            <TouchableOpacity 
-              key={index} 
-              onPress={() => handleCardClick(card)} 
-              activeOpacity={0.8}
-            >
-              <View style={[styles.cardWrapper,
-                (index % 2 === 0 ? {borderColor: "#2563EB"} : {borderColor: "#80b2e6"}),
-                (selectedCard.cardNumber === card.cardNumber ? {borderWidth: 2} : {})]}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#2563EB" />
+          </View>
+        ) : (
+          <ScrollView 
+            horizontal={true} 
+            showsHorizontalScrollIndicator={false} 
+            style={styles.cardsContainer}
+            contentContainerStyle={{ paddingRight: 20 }}
+          >
+            {cards.map((card, index) => (
+              <TouchableOpacity 
+                key={card.id} 
+                onPress={() => handleCardClick(card)} 
+                activeOpacity={0.8}
               >
-                <View style={[styles.card, (index % 2 === 0 ? styles.blueCard : styles.cyanCard)]}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardName}>{card.cardHolder}</Text>
-                    <Image 
-                      source={require('../../assets/avatars/avatar2.jpg')} 
-                      style={styles.cardLogo}
-                    />
-                  </View>
-                  <View style={styles.cardNumberContainer}>
-                    {card.cardNumber.split(' ').map((chunk, idx) => (
-                      <Text key={idx} style={styles.cardNumberText}>{chunk}</Text>
-                    ))}
-                  </View>
-                  <View style={styles.cardBrand}>
-                    <Text style={styles.cardBrandText}>BCD</Text>
-                    <Image 
-                      source={require('../../assets/puce.png')} 
-                      style={styles.cardPuce}
-                    />
-                    <Text></Text>
+                <View style={[styles.cardWrapper,
+                  (index % 2 === 0 ? {borderColor: "#2563EB"} : {borderColor: "#80b2e6"}),
+                  (selectedCard?.id === card.id ? {borderWidth: 2} : {})]}
+                >
+                  <View style={[styles.card, (index % 2 === 0 ? styles.blueCard : styles.cyanCard)]}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.cardName}>{card.card_name}</Text>
+                      <Image 
+                        source={require('../../assets/avatars/avatar2.jpg')} 
+                        style={styles.cardLogo}
+                      />
+                    </View>
+                    <View style={styles.cardNumberContainer}>
+                      {formatCardNumber(card.card_number).split(' ').map((chunk, idx) => (
+                        <Text key={idx} style={styles.cardNumberText}>{chunk}</Text>
+                      ))}
+                    </View>
+                    <View style={styles.cardBrand}>
+                      <Text style={styles.cardBrandText}>BCD</Text>
+                      <Image 
+                        source={require('../../assets/puce.png')} 
+                        style={styles.cardPuce}
+                      />
+                      <Text></Text>
+                    </View>
+                    <View style={styles.cardFooter}>
+                      <Text style={styles.cardDate}>{t('cards.expiresAt')}: {card.expiry_date}</Text>
+                      <Text style={styles.cardStatusBadge}>
+                        {card.status === CardStatus.ACTIVE ? t('cards.active') : t('cards.inactive')}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Card Details Section */}
-        <View style={[styles.cardDetailsSection, cardDetailBgStyle]}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, headerTextStyle]}>Card Detail</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>New Card</Text>
-            </TouchableOpacity>
-          </View>
+        {selectedCard && (
+          <View style={[styles.cardDetailsSection, cardDetailBgStyle]}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, headerTextStyle]}>{t('cards.cardDetail')}</Text>
+              <TouchableOpacity onPress={creating ? undefined : createNewCard} disabled={creating}>
+                {creating ? (
+                  <ActivityIndicator size="small" color="#2563EB" />
+                ) : (
+                  <Text style={styles.viewAllText}>{t('cards.newCard')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
 
-          {/* Card Info Items */}
-          <View style={styles.cardInfoContainer}>
-            <View style={styles.cardInfoItem}>
-              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>CVV:</Text>
-              <View style={[styles.cardInfoValue, cardInfoBgStyle]}>
-                <Text style={[styles.cardCvvText, headerTextStyle]}>
-                {isCvvVisible ? selectedCard.cvv : '***'}
+            {/* Card Info Items */}
+            <View style={styles.cardInfoContainer}>
+              <View style={styles.cardInfoItem}>
+                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardNumber')}:</Text>
+                <Text style={[styles.cardInfoValueText, headerTextStyle]}>{formatCardNumber(selectedCard.card_number)}</Text>
+              </View>
+
+              <View style={styles.cardInfoItem}>
+                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.expiryDate')}:</Text>
+                <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.expiry_date}</Text>
+              </View>
+
+              <View style={styles.cardInfoItem}>
+                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardType')}:</Text>
+                <Text style={[styles.cardInfoValueText, headerTextStyle]}>
+                  {selectedCard.card_type === CardType.DEBIT ? t('cards.debitCard') : t('cards.virtualCard')}
                 </Text>
-                <TouchableOpacity
-                  style={{ marginLeft: 'auto', marginTop: 0 }}
-                  onPress={toggleCvvVisibility}
-                >
-                  <Ionicons
-                    name={isCvvVisible ? "eye-outline" : "eye-off-outline"}
-                    size={18}
-                    color="#111827" />
-                </TouchableOpacity>
+              </View>
+
+              <View style={styles.cardInfoItem}>
+                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.status')}:</Text>
+                <Text style={[styles.cardInfoValueText, headerTextStyle]}>
+                  {selectedCard.status === CardStatus.ACTIVE ? t('cards.active') : t('cards.inactive')}
+                </Text>
+              </View>
+
+              <View style={styles.cardInfoItem}>
+                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.contactless')}:</Text>
+                <Text style={[styles.cardInfoValueText, headerTextStyle]}>
+                  {selectedCard.is_contactless ? t('common.yes') : t('common.no')}
+                </Text>
               </View>
             </View>
 
-            <View style={styles.cardInfoItem}>
-              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>Card Number:</Text>
-              <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.cardNumber}</Text>
+            {/* Action Buttons */}
+            <View style={styles.cardActionsContainer}>
+              <TouchableOpacity style={styles.withdrawButton}>
+                <Ionicons name="arrow-undo-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('cards.withdraw')}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.transferButton}>
+                <Ionicons name="arrow-redo-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('cards.transfer')}</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
-          {/* Action Buttons */}
-          <View style={styles.cardActionsContainer}>
-            <TouchableOpacity style={styles.withdrawButton}>
-              <Ionicons name="arrow-undo-outline" size={18} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Withdraw</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.transferButton}>
-              <Ionicons name="arrow-redo-outline" size={18} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Transfer</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -165,6 +262,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
+  },
+  centerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  loadingContainer: {
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -209,7 +319,7 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     marginRight: 15,
-    height: 340,
+    height: 240,
     width: width * 0.6,
     borderRadius: 22,
     overflow: 'hidden',
@@ -235,7 +345,7 @@ const styles = StyleSheet.create({
   },
   cardName: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
   },
   cardLogo: {
@@ -273,6 +383,23 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
     marginLeft: "15%",
+  },
+  cardFooter: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cardDate: {
+    color: 'white',
+    fontSize: 12,
+  },
+  cardStatusBadge: {
+    color: 'white',
+    fontSize: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   cardDetailsSection: {
     flex: 1,

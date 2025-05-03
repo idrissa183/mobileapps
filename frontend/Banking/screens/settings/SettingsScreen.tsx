@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  ScrollView,
   SafeAreaView,
   TouchableOpacity,
   Switch,
@@ -17,37 +17,69 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Linking } from 'react-native'; 
+import { Linking } from 'react-native';
 import useAuth from "../../hooks/useAuth";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../App';
 
-// Définition des langues disponibles
-const languages = [
+// Define available languages with proper typing
+interface Language {
+  id: string;
+  name: string;
+  flag: any;
+}
+
+// Define available languages
+const languages: Language[] = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
   { id: 'fr', name: 'Français', flag: require('../../assets/flags/france.png') },
 ];
+
 type Props = NativeStackScreenProps<MainTabParamList, 'Settings'>;
+
+// Define setting item interfaces for type safety
+interface SettingItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  onPress: () => void;
+  showArrow?: boolean;
+  rightElement?: React.ReactNode;
+}
+
+interface ToggleItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}
+
+interface SectionHeaderProps {
+  title: string;
+}
+
+interface SectionProps {
+  children: React.ReactNode;
+}
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { isDarkMode, toggleTheme, themeMode, setThemeMode, theme } = useTheme();
   const { t, language, setLanguage } = useTranslation();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [locationEnabled, setLocationEnabled] = useState(false);
-  const [langModalVisible, setLangModalVisible] = useState(false);
-  const [locationServiceStatus, setLocationServiceStatus] = useState('unknown');
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false);
+  const [locationEnabled, setLocationEnabled] = useState<boolean>(false);
+  const [langModalVisible, setLangModalVisible] = useState<boolean>(false);
+  const [locationServiceStatus, setLocationServiceStatus] = useState<string>('unknown');
   const { resetPassword, logout } = useAuth();
-
 
   useEffect(() => {
     checkLocationPermission();
   }, []);
 
-  const openURL = async (url) => {
-    
+  const openURL = async (url: string): Promise<void> => {
     try {
       const canOpen = await Linking.canOpenURL(url);
-      
+
       if (canOpen) {
         await Linking.openURL(url);
       } else {
@@ -57,7 +89,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           [{ text: t('ok', 'common') }]
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert(
         t('error', 'common'),
         `${t('linkError', 'settings')}: ${error.message}`,
@@ -65,95 +97,93 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       );
     }
   };
-  
 
-
-  // Fonction pour vérifier et demander les permissions de localisation
-  const checkLocationPermission = async () => {
+  // Check and request location permissions
+  const checkLocationPermission = async (): Promise<void> => {
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
       setLocationServiceStatus(status);
       setLocationEnabled(status === 'granted');
     } catch (error) {
-      // console.log('Error checking location permissions', error);
+      console.error('Error checking location permissions', error);
     }
   };
-  
-  // Fonction pour demander les permissions de localisation
-  const requestLocationPermission = async () => {
+
+  // Request location permission
+  const requestLocationPermission = async (): Promise<boolean> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       setLocationServiceStatus(status);
       return status === 'granted';
     } catch (error) {
-      // console.log('Error requesting location permissions', error);
+      console.error('Error requesting location permissions', error);
       return false;
     }
   };
 
-  // Styles basés sur le thème
+  // Get theme-based styles
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const sectionStyle = isDarkMode ? styles.darkSection : styles.lightSection;
   const itemStyle = isDarkMode ? styles.darkItem : styles.lightItem;
 
-  // Gestion du changement de langue avec modal
-  const openLanguageModal = () => {
+  // Language modal handling
+  const openLanguageModal = (): void => {
     setLangModalVisible(true);
   };
 
-  const changeLanguage = (langCode: any) => {
+  const changeLanguage = (langCode: string): void => {
     setLanguage(langCode);
     setLangModalVisible(false);
   };
 
-  const getCurrentLanguageFlag = () => {
+  const getCurrentLanguageFlag = (): any => {
     const currentLang = languages.find(lang => lang.id === language);
     return currentLang?.flag;
   };
 
-  // Gestion améliorée du changement de thème
-  const handleThemeChange = () => {
+  // Theme handling
+  const handleThemeChange = (): void => {
     Alert.alert(
       t('changeTheme', 'settings'),
       t('selectTheme', 'settings'),
       [
-        { 
-          text: t('light', 'settings'), 
+        {
+          text: t('light', 'settings'),
           onPress: () => {
             setThemeMode('light');
             Alert.alert(t('themeChanged', 'settings'), t('lightThemeApplied', 'settings'));
-          } 
+          }
         },
-        { 
-          text: t('dark', 'settings'), 
+        {
+          text: t('dark', 'settings'),
           onPress: () => {
             setThemeMode('dark');
             Alert.alert(t('themeChanged', 'settings'), t('darkThemeApplied', 'settings'));
-          } 
+          }
         },
-        { 
-          text: t('system', 'settings'), 
+        {
+          text: t('system', 'settings'),
           onPress: () => {
             setThemeMode('system');
             Alert.alert(t('themeChanged', 'settings'), t('systemThemeApplied', 'settings'));
-          } 
+          }
         },
         { text: t('cancel', 'common'), style: "cancel" }
       ]
     );
   };
 
-  const handleQuickToggleTheme = () => {
+  const handleQuickToggleTheme = (): void => {
     toggleTheme();
   };
 
-  // Gestion de la déconnexion
-  const handleLogout  = async () => {
+  // Handle logout
+  const handleLogout = async (): Promise<void> => {
     try {
       await logout();
-  
+
       navigation.reset({
         index: 0,
         routes: [{ name: 'Login' }],
@@ -173,8 +203,15 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Élément de paramètre avec icône et texte
-  const SettingItem = ({ icon, title, subtitle, onPress, showArrow = true, rightElement = null }) => {
+  // Setting item components with proper typing
+  const SettingItem: React.FC<SettingItemProps> = ({
+    icon,
+    title,
+    subtitle,
+    onPress,
+    showArrow = true,
+    rightElement = null
+  }) => {
     return (
       <TouchableOpacity style={[styles.settingItem, itemStyle]} onPress={onPress}>
         <View style={styles.settingItemLeft}>
@@ -195,8 +232,13 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  // Élément de paramètre avec bascule
-  const ToggleItem = ({ icon, title, subtitle, value, onValueChange }) => {
+  const ToggleItem: React.FC<ToggleItemProps> = ({
+    icon,
+    title,
+    subtitle,
+    value,
+    onValueChange
+  }) => {
     return (
       <View style={[styles.settingItem, itemStyle]}>
         <View style={styles.settingItemLeft}>
@@ -209,7 +251,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         <Switch
-          trackColor={{ false: "#767577", true: "#FFD700" }}
+          trackColor={{ false: "#767577", true: "#6366F1" }}
           thumbColor={value ? "#FFFFFF" : "#f4f3f4"}
           ios_backgroundColor="#3e3e3e"
           onValueChange={onValueChange}
@@ -219,15 +261,13 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  // En-tête de section
-  const SectionHeader = ({ title }) => {
+  const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => {
     return (
       <Text style={[styles.sectionHeader, secondaryTextStyle]}>{title}</Text>
     );
   };
 
-  // Conteneur de section
-  const Section = ({ children }) => {
+  const Section: React.FC<SectionProps> = ({ children }) => {
     return (
       <View style={[styles.section, sectionStyle]}>
         {children}
@@ -235,7 +275,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  // Données de paramètres dynamiques
+  // Dynamic settings data
   const accountSettings = [
     {
       icon: <Text style={styles.iconText}>🔑</Text>,
@@ -250,7 +290,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       onPress: () => console.log("Phone number pressed")
     }
   ];
-  
+
   const privacySettings = [
     {
       type: 'toggle',
@@ -258,11 +298,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       title: t('locationServices', 'settings'),
       subtitle: locationEnabled ? t('locationServicesEnabled', 'settings') : t('locationServicesDisabled', 'settings'),
       value: locationEnabled,
-      onValueChange: async (value) => {
+      onValueChange: async (value: boolean) => {
         if (value && locationServiceStatus !== 'granted') {
           const granted = await requestLocationPermission();
           setLocationEnabled(granted);
-          
+
           if (granted) {
             Alert.alert(
               t('locationUpdated', 'settings'),
@@ -298,7 +338,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       title: t('privacyPolicy', 'settings'),
       subtitle: t('privacyPolicyDescription', 'settings'),
       onPress: () => {
-        // console.log('Privacy Policy pressed'); // Debug log
         openURL('https://walkerstanislas.github.io/politique-confidentialite-app-bank/');
       }
     },
@@ -307,13 +346,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       title: t('termsOfUse', 'settings'),
       subtitle: t('termsOfUseDescription', 'settings'),
       onPress: () => {
-        // console.log('Terms of Use pressed'); // Debug log
-        // Ouvrir directement le lien sans la alerte de confirmation
         openURL('https://walkerstanislas.github.io/politique-confidentialite-app-bank/');
       }
     }
   ];
-  
+
   const supportSettings = [
     {
       icon: <Text style={styles.iconText}>✉️</Text>,
@@ -328,9 +365,9 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       title: t('rateApp', 'settings'),
       subtitle: t('rateAppDescription', 'settings'),
       onPress: () => {
-        const APP_STORE_ID = ''; 
+        const APP_STORE_ID = '';
         const PLAY_STORE_ID = '';
-        
+
         if (Platform.OS === 'ios') {
           openURL(`itms-apps://itunes.apple.com/app/id${APP_STORE_ID}?action=write-review`);
         } else {
@@ -340,8 +377,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   ];
 
-  const getThemeModeName = () => {
-    switch(themeMode) {
+  const getThemeModeName = (): string => {
+    switch (themeMode) {
       case 'light': return t('themeLight', 'settings');
       case 'dark': return t('themeDark', 'settings');
       case 'system': return t('themeSystem', 'settings');
@@ -354,7 +391,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       {/* Header with back button and title */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#FFD700' : '#1E40AF'} />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#6366F1' : '#4F46E5'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
         <View style={styles.headerRight} />
@@ -366,7 +403,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <Section>
           {accountSettings.map((setting, index) => (
             <React.Fragment key={`account-${index}`}>
-              <SettingItem 
+              <SettingItem
                 icon={setting.icon}
                 title={setting.title}
                 subtitle={setting.subtitle}
@@ -385,7 +422,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             title={t('notifications', 'settings')}
             subtitle={notificationsEnabled ? t('notificationsEnabled', 'settings') : t('notificationsDisabled', 'settings')}
             value={notificationsEnabled}
-            onValueChange={(value) => {
+            onValueChange={(value: boolean) => {
               setNotificationsEnabled(value);
               Alert.alert(
                 t('notificationsUpdated', 'settings'),
@@ -395,7 +432,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             }}
           />
           <View style={styles.divider} />
-          
+
           {/* Language selection */}
           <SettingItem
             icon={<Text style={styles.iconText}>🌐</Text>}
@@ -412,10 +449,10 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             }
           />
-          
+
           <View style={styles.divider} />
-          
-          {/* Improved theme selection */}
+
+          {/* Theme selection */}
           <SettingItem
             icon={<Text style={styles.iconText}>🌙</Text>}
             title={t('theme', 'settings')}
@@ -426,20 +463,20 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity
                   style={[
                     styles.quickThemeToggle,
-                    { backgroundColor: isDarkMode ? '#FFD700' : '#1E40AF' }
+                    { backgroundColor: isDarkMode ? '#6366F1' : '#4F46E5' }
                   ]}
                   onPress={handleQuickToggleTheme}
                 >
-                  <Ionicons 
-                    name={isDarkMode ? "sunny" : "moon"} 
-                    size={16} 
-                    color={isDarkMode ? '#000' : '#fff'} 
+                  <Ionicons
+                    name={isDarkMode ? "sunny" : "moon"}
+                    size={16}
+                    color={isDarkMode ? '#fff' : '#fff'}
                   />
                 </TouchableOpacity>
-                <Ionicons 
-                  name="chevron-forward" 
-                  size={16} 
-                  color={isDarkMode ? "#fff" : "#000"} 
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={isDarkMode ? "#fff" : "#000"}
                 />
               </View>
             }
@@ -452,7 +489,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           {privacySettings.map((setting, index) => (
             <React.Fragment key={`privacy-${index}`}>
               {setting.type === 'toggle' ? (
-                <ToggleItem 
+                <ToggleItem
                   icon={setting.icon}
                   title={setting.title}
                   subtitle={setting.subtitle}
@@ -460,11 +497,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                   onValueChange={setting.onValueChange}
                 />
               ) : (
-                <SettingItem 
+                <SettingItem
                   icon={setting.icon}
                   title={setting.title}
                   subtitle={setting.subtitle}
-                  onPress={setting.onPress}
+                  onPress={() => setting.onPress}
                 />
               )}
               {index < privacySettings.length - 1 && <View style={styles.divider} />}
@@ -477,7 +514,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <Section>
           {supportSettings.map((setting, index) => (
             <React.Fragment key={`support-${index}`}>
-              <SettingItem 
+              <SettingItem
                 icon={setting.icon}
                 title={setting.title}
                 subtitle={setting.subtitle}
@@ -489,11 +526,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         </Section>
 
         {/* Logout Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.logoutButton,
             isDarkMode && styles.logoutButtonDark
-          ]} 
+          ]}
           onPress={handleLogout}
           accessibilityLabel={t('logout', 'auth')}
           accessibilityRole="button"
@@ -543,7 +580,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                     {item.name}
                   </Text>
                   {language === item.id && (
-                    <Ionicons name="checkmark" size={20} color="#FFD700" />
+                    <Ionicons name="checkmark" size={20} color="#6366F1" />
                   )}
                 </TouchableOpacity>
               )}
@@ -555,6 +592,37 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
+// Updated color palette with more modern indigo/purple hues
+const colors = {
+  light: {
+    background: '#F9FAFB',
+    surface: '#FFFFFF',
+    surfaceVariant: '#F3F4F6',
+    onSurface: '#111827',
+    onSurfaceVariant: '#6B7280',
+    primary: '#4F46E5',
+    primaryVariant: '#6366F1',
+    divider: 'rgba(107, 114, 128, 0.2)',
+    error: '#EF4444',
+    logout: '#DC2626',
+    logoutDark: '#B91C1C',
+    selectedItem: '#EEF2FF',
+  },
+  dark: {
+    background: '#0F172A',
+    surface: '#1E293B',
+    surfaceVariant: '#1E293B',
+    onSurface: '#F9FAFB',
+    onSurfaceVariant: '#9CA3AF',
+    primary: '#6366F1',
+    primaryVariant: '#818CF8',
+    divider: 'rgba(156, 163, 175, 0.2)',
+    error: '#F87171',
+    logout: '#EF4444',
+    logoutDark: '#DC2626',
+    selectedItem: '#312E81',
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -616,7 +684,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -645,7 +713,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: colors.light.logout,
     marginHorizontal: 20,
     marginVertical: 20,
     padding: 16,
@@ -653,7 +721,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoutButtonDark: {
-    backgroundColor: '#FF453A',
+    backgroundColor: colors.dark.logout,
   },
   logoutText: {
     color: 'white',
@@ -665,51 +733,51 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     fontSize: 14,
   },
-  // Styles mode clair
+  // Light mode styles
   lightContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.light.background,
   },
   lightSection: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.light.surfaceVariant,
   },
   lightItem: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.light.surfaceVariant,
   },
   lightHeaderText: {
-    color: '#111827',
+    color: colors.light.onSurface,
   },
   lightSecondaryText: {
-    color: '#6B7280',
+    color: colors.light.onSurfaceVariant,
   },
   lightModal: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.light.surface,
   },
   lightSelectedLanguage: {
-    backgroundColor: '#ebf5ff',
+    backgroundColor: colors.light.selectedItem,
   },
-  // Styles mode sombre
+  // Dark mode styles
   darkContainer: {
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.dark.background,
   },
   darkSection: {
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.dark.surface,
   },
   darkItem: {
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.dark.surface,
   },
   darkHeaderText: {
-    color: '#F9FAFB',
+    color: colors.dark.onSurface,
   },
   darkSecondaryText: {
-    color: '#9CA3AF',
+    color: colors.dark.onSurfaceVariant,
   },
   darkModal: {
-    backgroundColor: '#2d3748',
+    backgroundColor: colors.dark.surface,
   },
   darkSelectedLanguage: {
-    backgroundColor: '#4a5568',
+    backgroundColor: colors.dark.selectedItem,
   },
-  // Styles de modal
+  // Modal styles
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -782,26 +850,5 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 });
-
-const getStyles = (isDarkMode: boolean) =>
-    StyleSheet.create({
-        container: {
-            flex: 1,
-            paddingTop: 30,
-            backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
-        },
-        scroll: {
-            flex: 1,
-        },
-        innerContainer: {
-            padding: 16, 
-        },
-        title: {
-            fontSize: 24, 
-            fontWeight: 'bold',
-            marginBottom: 24,
-            color: isDarkMode ? '#ffffff' : '#1f2937',
-        },
-    });
 
 export default SettingsScreen;

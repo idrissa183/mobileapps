@@ -1,7 +1,6 @@
+import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { AxiosResponse } from 'axios';
 
-// Interface for Contact as returned by the API
 export interface Contact {
     id: string;
     user_id: string;
@@ -14,35 +13,65 @@ export interface Contact {
     phone?: string | null;
 }
 
+export interface TransactionSummary {
+    totalSent: number;
+    totalReceived: number;
+    count: number;
+}
+
+// Types complémentaires pour l'API
+export interface PaginationParams {
+    limit: number;
+    skip: number;
+    search?: string;
+}
+
+
+/**
+ * Service pour gérer les contacts dans l'application bancaire
+ */
 const contactService = {
-    // Get all contacts (with optional search and pagination)
+    /**
+     * Récupère la liste des contacts avec une recherche optionnelle et pagination
+     * @param search - Terme de recherche optionnel (nom, email, etc.)
+     * @param limit - Nombre maximum de contacts à retourner
+     * @param skip - Nombre de contacts à sauter (pour la pagination)
+     * @returns Promise avec un tableau de contacts
+     */
     getContacts: async (
         search?: string,
         limit: number = 20,
         skip: number = 0
     ): Promise<Contact[]> => {
         try {
-            const params = {
-                search,
+            const params: PaginationParams = {
                 limit,
                 skip
             };
 
+            if (search) {
+                params.search = search;
+            }
+
             const response: AxiosResponse<Contact[]> = await api.get('/banking/contacts', { params });
             return response.data;
         } catch (error) {
-            console.error('Error fetching contacts:', error);
+            console.error('Erreur lors de la récupération des contacts:', error);
             throw error;
         }
     },
 
-    // Get details of a specific contact
+    /**
+     * Récupère les détails d'un contact spécifique
+     * @param contactId - ID du contact à récupérer
+     * @returns Promise avec les détails du contact
+     */
     getContactById: async (contactId: string): Promise<Contact> => {
         try {
             const response: AxiosResponse<Contact> = await api.get(`/banking/contacts/${contactId}`);
             return response.data;
         } catch (error) {
-            console.error(`Error fetching contact details for ID ${contactId}:`, error);
+            console.error(`Erreur lors de la récupération des détails du contact ${contactId}:`, error);
             throw error;
         }
     }
