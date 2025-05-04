@@ -405,8 +405,9 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={{ width: 24 }} />
       </View>
 
+      
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Account Section */}
+        {/* Account Section 
         <SectionHeader title={t('account', 'settings').toUpperCase()} />
         <Section>
           {accountSettings.map((setting, index) => (
@@ -421,6 +422,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             </React.Fragment>
           ))}
         </Section>
+        */}
+        
 
         {/* Preferences Section */}
         <SectionHeader title={t('preferences', 'settings').toUpperCase()} />
