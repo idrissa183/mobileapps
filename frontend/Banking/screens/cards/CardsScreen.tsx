@@ -9,7 +9,7 @@ import {
   TouchableOpacity, 
   Dimensions, 
   Modal,
-  TextInput
+  TextInput,
   ActivityIndicator
 } from "react-native";
 import {Picker} from '@react-native-picker/picker';
