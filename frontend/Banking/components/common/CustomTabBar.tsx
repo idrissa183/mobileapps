@@ -128,8 +128,6 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
 
 const styles = StyleSheet.create({
   container: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
   },
   lightContainer: {
     backgroundColor: '#FFFFFF',

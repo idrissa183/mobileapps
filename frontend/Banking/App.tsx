@@ -29,6 +29,8 @@ import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import OTPVerificationScreen from './screens/auth/OTPVerificationScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import useAuth from './hooks/useAuth';
+import { Transaction } from './services/transactionService';
+import TransactionDetailScreen from './screens/history/TransactionDetailScreen';
 
 // Types
 export type RootStackParamList = {
@@ -47,6 +49,7 @@ export type MainTabParamList = {
   Contact: undefined;
   History: undefined;
   Settings: undefined;
+  TransactionDetail: { transaction: Transaction };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -86,6 +89,7 @@ const Navigation = () => {
           <>
             <Stack.Screen name="MainApp" component={MainAppTabs} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="TransactionDetail" component={TransactionDetailScreen} />
           </>
         )}
         { /* <Stack.Screen name="MainApp" component={MainAppTabs} /> */}

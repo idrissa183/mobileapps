@@ -1,272 +1,320 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  SafeAreaView, 
-  StyleSheet, 
-  Image, 
-  TouchableOpacity, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  SafeAreaView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
   TextInput,
   FlatList,
-  Dimensions 
+  Dimensions,
+  ActivityIndicator,
+  RefreshControl,
+  Platform
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
+import contactService, { Contact } from '../../services/contactService';
+import { useDebounce } from '../../hooks/useDebounce';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import useTranslation from '../../hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
-const ContactScreen = () => {
+const defaultAvatar = require('../../assets/avatars/avatar2.jpg');
+
+const ContactScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedContact, setSelectedContact] = useState(null);
-  
+  const { t } = useTranslation();
+  const navigation = useNavigation();
+
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [frequentContacts, setFrequentContacts] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchContacts = useCallback(async (search?: string) => {
+    try {
+      setError(null);
+      const data = await contactService.getContacts(search);
+      setContacts(data);
+
+      // Pour cet exemple, nous considérons les 3 premiers contacts comme fréquents
+      // Dans une vraie application, cela pourrait être basé sur des statistiques de transaction
+      setFrequentContacts(data.slice(0, 3));
+    } catch (err) {
+      console.error('Failed to fetch contacts:', err);
+      setError(t('contacts.errorFetching'));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    fetchContacts(debouncedSearch);
+  }, [debouncedSearch, fetchContacts]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchContacts(searchQuery);
+  }, [fetchContacts, searchQuery]);
+
+  const handleContactPress = async (contact: Contact) => {
+    try {
+      setLoading(true);
+      const contactDetails = await contactService.getContactById(contact.id);
+      setSelectedContact(contactDetails);
+    } catch (err) {
+      console.error('Failed to fetch contact details:', err);
+      setError(t('contacts.errorFetchingDetails'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendMoney = (contact: Contact) => {
+    navigation.navigate('TransferScreen', { contact });
+  };
+
+  const handleRequestMoney = (contact: Contact) => {
+    navigation.navigate('RequestScreen', { contact });
+  };
+
+  const handleAddContact = () => {
+    navigation.navigate('AddContactScreen');
+  };
+
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const cardStyle = isDarkMode ? styles.darkCard : styles.lightCard;
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const inputStyle = isDarkMode ? styles.darkInput : styles.lightInput;
   const inputContainerStyle = isDarkMode ? styles.darkInputContainer : styles.lightInputContainer;
+  const dividerStyle = isDarkMode ? styles.darkDivider : styles.lightDivider;
 
-  const contacts = [
-    {
-      id: '1',
-      name: 'Alberto Montero',
-      phoneNumber: '+226 (70) 70-62-47',
-      email: 'alberto@gmail.com',
-      isFrequent: true,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 5,
-      totalSent: '$1,250.00',
-      totalReceived: '$600.00'
-    },
-    {
-      id: '2',
-      name: 'Louis Da Silva',
-      phoneNumber: '+226 (56) 56-62-47',
-      email: 'louis@gmail.com',
-      isFrequent: true,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 3,
-      totalSent: '$85.00',
-      totalReceived: '$120.00'
-    },
-    {
-      id: '3',
-      name: 'Marina Kostova',
-      phoneNumber: '+226 (78) 78-62-47',
-      email: 'marina@gmail.com',
-      isFrequent: true,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 8,
-      totalSent: '$350.00',
-      totalReceived: '$425.00'
-    },
-    {
-      id: '4',
-      name: 'John Smith',
-      phoneNumber: '+226 (77) 77-62-47',
-      email: 'john@gmail.com',
-      isFrequent: false,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 2,
-      totalSent: '$50.00',
-      totalReceived: '$0.00'
-    },
-    {
-      id: '5',
-      name: 'Emma Wilson',
-      phoneNumber: '+226 (60) 60-62-47',
-      email: 'emma@gmail.com',
-      isFrequent: false,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 1,
-      totalSent: '$75.00',
-      totalReceived: '$0.00'
-    },
-    {
-      id: '6',
-      name: 'Thomas Lee',
-      phoneNumber: '+226 (73) 73-62-47',
-      email: 'thomas@gmail.com',
-      isFrequent: false,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 4,
-      totalSent: '$230.00',
-      totalReceived: '$180.00'
-    },
-    {
-      id: '7',
-      name: 'Sophia Garcia',
-      phoneNumber: '+226 (79) 79-62-47',
-      email: 'sophia@gmail.com',
-      isFrequent: false,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 2,
-      totalSent: '$120.00',
-      totalReceived: '$45.00'
-    },
-    {
-      id: '8',
-      name: 'Robert Johnson',
-      phoneNumber: '+226 (76) 76-62-47',
-      email: 'robert@gmail.com',
-      isFrequent: false,
-      avatar: require('../../assets/avatars/avatar2.jpg'),
-      transactions: 3,
-      totalSent: '$200.00',
-      totalReceived: '$75.00'
-    }
-  ];
-
-  const filteredContacts = contacts.filter(contact => 
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.phoneNumber.includes(searchQuery) ||
-    contact.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const frequentContacts = contacts.filter(contact => contact.isFrequent);
-  
-  const renderContactItem = ({ item }) => (
-    <TouchableOpacity 
-      style={[styles.contactItem, cardStyle, selectedContact?.id === item.id && styles.selectedContact]} 
-      onPress={() => setSelectedContact(item)}
+  const renderContactItem = ({ item }: { item: Contact }) => (
+    <TouchableOpacity
+      style={[styles.contactItem, cardStyle, selectedContact?.id === item.id && styles.selectedContact]}
+      onPress={() => handleContactPress(item)}
     >
-      <Image source={item.avatar} style={styles.contactAvatar} />
+      <View style={styles.contactAvatarContainer}>
+        {item.profile_image ? (
+          <Image source={{ uri: item.profile_image }} style={styles.contactAvatar} />
+        ) : (
+          <Image source={defaultAvatar} style={styles.contactAvatar} />
+        )}
+      </View>
       <View style={styles.contactInfo}>
-        <Text style={[styles.contactName, headerTextStyle]}>{item.name}</Text>
-        <Text style={[styles.contactDetail, secondaryTextStyle]}>{item.phoneNumber}</Text>
+        <Text style={[styles.contactName, headerTextStyle]} numberOfLines={1}>
+          {item.full_name}
+        </Text>
+        <Text style={[styles.contactDetail, secondaryTextStyle]} numberOfLines={1}>
+          {item.username} • {item.account_number}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
+  const renderFrequentContact = (contact: Contact) => (
+    <TouchableOpacity
+      key={contact.id}
+      style={styles.frequentContactItem}
+      onPress={() => handleContactPress(contact)}
+    >
+      <View style={styles.frequentAvatarContainer}>
+        {contact.profile_image ? (
+          <Image source={{ uri: contact.profile_image }} style={styles.frequentContactAvatar} />
+        ) : (
+          <Image source={defaultAvatar} style={styles.frequentContactAvatar} />
+        )}
+      </View>
+      <Text
+        style={[styles.frequentContactName, headerTextStyle]}
+        numberOfLines={1}
+        ellipsizeMode="tail">
+        {contact.full_name.split(' ')[0]}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderEmptyList = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="people-outline" size={64} color={isDarkMode ? '#6B7280' : '#9CA3AF'} />
+      <Text style={[styles.emptyText, secondaryTextStyle]}>
+        {searchQuery ? t('contacts.noResults') : t('contacts.noContacts')}
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4F46E5']}
+            tintColor={isDarkMode ? '#818CF8' : '#4F46E5'}
+          />
+        }
+      >
         {/* Header avec le titre et le bouton d'ajout de contact */}
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, headerTextStyle]}>Contacts</Text>
+          <Text style={[styles.headerTitle, headerTextStyle]}>{t('contacts.title')}</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddContact}>
+            <Ionicons name="person-add-outline" size={24} color={isDarkMode ? '#818CF8' : '#4F46E5'} />
+          </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, inputContainerStyle]}>
-          <Text style={[styles.searchIcon, secondaryTextStyle]}>🔍</Text>
+          <Ionicons name="search-outline" size={20} style={styles.searchIcon} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
           <TextInput
             style={[styles.searchInput, inputStyle]}
-            placeholder="Search contacts"
+            placeholder={t('contacts.searchPlaceholder')}
             placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity style={styles.clearButton} onPress={() => setSearchQuery('')}>
-              <Text style={secondaryTextStyle}>✕</Text>
+              <Ionicons name="close-circle" size={20} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
             </TouchableOpacity>
           )}
         </View>
 
+        {/* Error Display */}
+        {error && (
+          <View style={[styles.errorContainer, cardStyle]}>
+            <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        {/* Loading Indicator */}
+        {loading && !refreshing && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={isDarkMode ? '#818CF8' : '#4F46E5'} />
+          </View>
+        )}
+
         {/* Contact Details Section - Only shown when a contact is selected */}
-        {selectedContact && (
+        {selectedContact && !loading && (
           <View style={[styles.detailsCard, cardStyle]}>
             <View style={styles.detailsHeader}>
-              <Image source={selectedContact.avatar} style={styles.detailsAvatar} />
+              <View style={styles.detailsAvatarContainer}>
+                {selectedContact.profile_image ? (
+                  <Image source={{ uri: selectedContact.profile_image }} style={styles.detailsAvatar} />
+                ) : (
+                  <Image source={defaultAvatar} style={styles.detailsAvatar} />
+                )}
+              </View>
               <View style={styles.detailsHeaderInfo}>
-                <Text style={[styles.detailsName, headerTextStyle]}>{selectedContact.name}</Text>
+                <Text style={[styles.detailsName, headerTextStyle]}>{selectedContact.full_name}</Text>
                 <Text style={[styles.detailsEmail, secondaryTextStyle]}>{selectedContact.email}</Text>
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedContact(null)}>
-                <Text style={[styles.closeButtonText, secondaryTextStyle]}>✕</Text>
+                <Ionicons name="close-outline" size={24} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.detailsContent}>
               <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, secondaryTextStyle]}>Phone</Text>
-                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.phoneNumber}</Text>
+                <Text style={[styles.detailsLabel, secondaryTextStyle]}>{t('contacts.username')}</Text>
+                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.username}</Text>
               </View>
-              
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, secondaryTextStyle]}>Email</Text>
-                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.email}</Text>
-              </View>
-              
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, secondaryTextStyle]}>Transactions</Text>
-                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.transactions}</Text>
-              </View>
-              
-              <View style={styles.detailsStats}>
-                <View style={styles.statItem}>
-                  <Text style={[styles.statValue, headerTextStyle, styles.sentColor]}>{selectedContact.totalSent}</Text>
-                  <Text style={[styles.statLabel, secondaryTextStyle]}>Sent</Text>
+
+              {selectedContact.phone && (
+                <View style={styles.detailsRow}>
+                  <Text style={[styles.detailsLabel, secondaryTextStyle]}>{t('contacts.phone')}</Text>
+                  <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.phone}</Text>
                 </View>
-                
-                <View style={styles.statDivider}></View>
-                
-                <View style={styles.statItem}>
-                  <Text style={[styles.statValue, headerTextStyle, styles.receivedColor]}>{selectedContact.totalReceived}</Text>
-                  <Text style={[styles.statLabel, secondaryTextStyle]}>Received</Text>
-                </View>
+              )}
+
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, secondaryTextStyle]}>{t('contacts.accountName')}</Text>
+                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.account_name}</Text>
+              </View>
+
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, secondaryTextStyle]}>{t('contacts.accountNumber')}</Text>
+                <Text style={[styles.detailsValue, headerTextStyle]}>{selectedContact.account_number}</Text>
               </View>
             </View>
-            
+
             <View style={styles.detailsActions}>
-              <TouchableOpacity style={styles.actionBtnPrimary}>
-                <Text style={styles.actionBtnPrimaryText}>Send Money</Text>
+              <TouchableOpacity
+                style={styles.actionBtnPrimary}
+                onPress={() => handleSendMoney(selectedContact)}
+              >
+                <Text style={styles.actionBtnPrimaryText}>{t('contacts.sendMoney')}</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionBtnSecondary}>
-                <Text style={[styles.actionBtnSecondaryText, headerTextStyle]}>Request</Text>
+
+              <TouchableOpacity
+                style={styles.actionBtnSecondary}
+                onPress={() => handleRequestMoney(selectedContact)}
+              >
+                <Text style={[styles.actionBtnSecondaryText, headerTextStyle]}>{t('contacts.request')}</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        {/* Frequent Contacts */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, headerTextStyle]}>Frequent Contacts</Text>
-          <ScrollView 
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.frequentContactsContainer}
-          >
-            {frequentContacts.map((contact) => (
-              <TouchableOpacity 
-                key={contact.id}
-                style={styles.frequentContactItem}
-                onPress={() => setSelectedContact(contact)}
-              >
-                <Image source={contact.avatar} style={styles.frequentContactAvatar} />
-                <Text style={[styles.frequentContactName, headerTextStyle]} 
-                      numberOfLines={1} 
-                      ellipsizeMode="tail">
-                  {contact.name.split(' ')[0]}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        {!loading && (
+          <>
+            {/* Frequent Contacts */}
+            {frequentContacts.length > 0 && (
+              <View style={styles.sectionContainer}>
+                <Text style={[styles.sectionTitle, headerTextStyle]}>{t('contacts.frequent')}</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.frequentContactsContainer}
+                >
+                  {frequentContacts.map(renderFrequentContact)}
+                </ScrollView>
+              </View>
+            )}
 
-        {/* All Contacts */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, headerTextStyle]}>All Contacts</Text>
-          <FlatList
-            data={filteredContacts}
-            renderItem={renderContactItem}
-            keyExtractor={item => item.id}
-            scrollEnabled={false}
-            contentContainerStyle={styles.contactListContainer}
-          />
-        </View>
+            {/* All Contacts */}
+            <View style={styles.sectionContainer}>
+              <Text style={[styles.sectionTitle, headerTextStyle]}>{t('contacts.all')}</Text>
+              {contacts.length === 0 ? renderEmptyList() : (
+                <FlatList
+                  data={contacts}
+                  renderItem={renderContactItem}
+                  keyExtractor={item => item.id}
+                  scrollEnabled={false}
+                  contentContainerStyle={styles.contactListContainer}
+                />
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // Base styles
   container: {
     flex: 1,
-    paddingTop:30,
+    paddingTop: 30,
+  },
+  lightContainer: {
+    backgroundColor: '#F9FAFB',
+  },
+  darkContainer: {
+    backgroundColor: '#111827',
   },
   scrollView: {
     flex: 1,
@@ -276,167 +324,204 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  addButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
+  lightHeaderText: {
+    color: '#1F2937',
   },
-  
-  // Search bar
+  darkHeaderText: {
+    color: '#F9FAFB',
+  },
+  lightSecondaryText: {
+    color: '#6B7280',
+  },
+  darkSecondaryText: {
+    color: '#9CA3AF',
+  },
+  addButton: {
+    padding: 8,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 20,
-    marginBottom: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    marginVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 12,
+    height: 48,
+  },
+  lightInputContainer: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
+    borderWidth: 1,
+  },
+  darkInputContainer: {
+    backgroundColor: '#1F2937',
+    borderColor: '#374151',
+    borderWidth: 1,
   },
   searchIcon: {
-    marginRight: 10,
-    fontSize: 16,
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
+    height: '100%',
     fontSize: 16,
-    padding: 0,
+  },
+  lightInput: {
+    color: '#1F2937',
+  },
+  darkInput: {
+    color: '#F9FAFB',
   },
   clearButton: {
     padding: 4,
   },
-  
-  // Section styles
   sectionContainer: {
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    marginTop: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginHorizontal: 20,
-    marginBottom: 16,
+    fontWeight: '600',
+    marginBottom: 12,
   },
-  
-  // Frequent contacts
   frequentContactsContainer: {
-    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
   frequentContactItem: {
     alignItems: 'center',
     marginRight: 16,
-    width: 70,
+    width: 80,
+  },
+  frequentAvatarContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   frequentContactAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginBottom: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   frequentContactName: {
+    marginTop: 8,
     fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
-    width: 70,
   },
-  
-  // Contact list
   contactListContainer: {
-    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    marginBottom: 12,
     borderRadius: 12,
+    marginBottom: 8,
   },
-  selectedContact: {
-    borderWidth: 2,
-    borderColor: '#1E40AF',
+  lightCard: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  darkCard: {
+    backgroundColor: '#1F2937',
+    borderColor: '#374151',
+    borderWidth: 1,
+  },
+  contactAvatarContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   contactAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   contactInfo: {
+    marginLeft: 16,
     flex: 1,
   },
   contactName: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
   },
   contactDetail: {
     fontSize: 14,
+    marginTop: 2,
   },
-  contactActions: {
-    flexDirection: 'row',
+  selectedContact: {
+    borderWidth: 2,
+    borderColor: '#4F46E5',
   },
-  actionButton: {
-    backgroundColor: '#1E40AF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  actionButtonText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  
-  // Details card
   detailsCard: {
-    margin: 20,
     borderRadius: 16,
-    marginBottom: 24,
+    marginHorizontal: 20,
+    marginTop: 16,
     overflow: 'hidden',
   },
   detailsHeader: {
     flexDirection: 'row',
-    padding: 16,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(150, 150, 150, 0.2)',
+    padding: 16,
+  },
+  detailsAvatarContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   detailsAvatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    marginRight: 16,
   },
   detailsHeaderInfo: {
+    marginLeft: 16,
     flex: 1,
   },
   detailsName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontWeight: '600',
   },
   detailsEmail: {
     fontSize: 14,
+    marginTop: 2,
   },
   closeButton: {
-    padding: 8,
-  },
-  closeButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    padding: 4,
   },
   detailsContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   detailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    alignItems: 'center',
+    paddingVertical: 12,
   },
   detailsLabel: {
     fontSize: 14,
@@ -445,107 +530,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  detailsStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(150, 150, 150, 0.2)',
+  lightDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: 'rgba(150, 150, 150, 0.2)',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-  },
-  sentColor: {
-    color: '#EF4444',
-  },
-  receivedColor: {
-    color: '#10B981',
+  darkDivider: {
+    height: 1,
+    backgroundColor: '#374151',
   },
   detailsActions: {
     flexDirection: 'row',
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(150, 150, 150, 0.2)',
+    borderColor: '#E5E7EB',
   },
   actionBtnPrimary: {
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
     flex: 1,
-    backgroundColor: '#1E40AF',
     paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
     marginRight: 8,
   },
   actionBtnPrimaryText: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '600',
   },
   actionBtnSecondary: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
     marginLeft: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(150, 150, 150, 0.3)',
   },
   actionBtnSecondaryText: {
-    fontWeight: '600',
     fontSize: 16,
+    fontWeight: '600',
   },
-  
-  // Light mode styles
-  lightContainer: {
-    backgroundColor: '#FFFFFF',
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  lightCard: {
-    backgroundColor: '#F3F4F6',
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
   },
-  lightHeaderText: {
-    color: '#111827',
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
   },
-  lightSecondaryText: {
-    color: '#6B7280',
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#EF4444',
   },
-  lightInput: {
-    color: '#111827',
-  },
-  lightInputContainer: {
-    backgroundColor: '#F3F4F6',
-  },
-  
-  // Dark mode styles
-  darkContainer: {
-    backgroundColor: '#0F172A',
-  },
-  darkCard: {
-    backgroundColor: '#1E293B',
-  },
-  darkHeaderText: {
-    color: '#F9FAFB',
-  },
-  darkSecondaryText: {
-    color: '#9CA3AF',
-  },
-  darkInput: {
-    color: '#F9FAFB',
-  },
-  darkInputContainer: {
-    backgroundColor: '#1E293B',
+  errorText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#EF4444',
+    flex: 1,
   },
 });
 

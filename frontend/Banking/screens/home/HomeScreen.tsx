@@ -1,112 +1,81 @@
-import React, { useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  SafeAreaView, 
-  StyleSheet, 
-  Image, 
-  TouchableOpacity, 
-  Dimensions 
-} from "react-native";
-import { useTheme } from '../../hooks/useTheme';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import transactionService, { Transaction } from '../../services/transactionService';
 import axios from 'axios';
+import useTheme from '../../hooks/useTheme';
+import useTranslation from '../../hooks/useTranslation';
+import TransactionsList from '../history/TransactionList';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MainTabParamList } from '../../App';
 
 const { width } = Dimensions.get('window');
-
-const HomeScreen = ({ navigation }) => {
+type Props = NativeStackScreenProps<MainTabParamList, 'Home'>;
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const cardStyle = isDarkMode ? styles.darkCard : styles.lightCard;
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
 
-  const transactions = [
-    { 
-      id: 1, 
-      name: 'Alberto Montero', 
-      type: 'Added',
-      date: 'Today', 
-      amount: '+$600.00', 
-      isPositive: true,
-      avatar: require('../../assets/avatars/avatar2.jpg')
-    },
-    { 
-      id: 2, 
-      name: 'Louis Da Silva', 
-      type: 'Added',
-      date: '27 Aug', 
-      amount: '+$8.50', 
-      isPositive: true,
-      avatar: require('../../assets/avatars/avatar2.jpg') 
-    },
-    { 
-      id: 3, 
-      name: 'Amazon Store', 
-      type: 'Paid',
-      date: '27 Aug', 
-      amount: '-$10.50', 
-      isPositive: false,
-      avatar: require('../../assets/avatars/avatar2.jpg')
-    },
-    { 
-      id: 4, 
-      name: 'Alberto Montero', 
-      type: 'Added',
-      date: 'Today', 
-      amount: '+$600.00', 
-      isPositive: true,
-      avatar: require('../../assets/avatars/avatar2.jpg')
-    },
-    { 
-      id: 5, 
-      name: 'Alberto Montero', 
-      type: 'Added',
-      date: 'Today', 
-      amount: '+$600.00', 
-      isPositive: true,
-      avatar: require('../../assets/avatars/avatar2.jpg')
-    },
-    { 
-      id: 6, 
-      name: 'Alberto Montero', 
-      type: 'Added',
-      date: 'Today', 
-      amount: '+$600.00', 
-      isPositive: true,
-      avatar: require('../../assets/avatars/avatar2.jpg')
-    },
-  ];
-
-  const [currRates, setCurrRates] = React.useState<{ currency: string; rate: number | null }[]>([]);
+  // États pour les transactions et le chargement
+  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // État pour les taux de change
+  const [currRates, setCurrRates] = useState<{ currency: string; rate: number | null }[]>([]);
+  const [balance, setBalance] = useState(1230.60);
 
   useEffect(() => {
-    async function retrieveCurrRates() {
-      axios.get('https://api.exchangerate-api.com/v4/latest/USD')
-        .then((response) => {
-          const rates = response?.data.rates;
-            const currRatesArray = ['USD', 'XOF', 'EUR'].map((key) => {
-            return { currency: key, rate: rates[key] };
-            });
-          setCurrRates(currRatesArray);
-        })
-        .catch((error) => {
-          console.error('Error fetching currency rates:', error);
+    // Charger les transactions
+    const loadTransactions = async () => {
+      try {
+        setIsLoading(true);
+        const result = await transactionService.getTransactions({ 
+          limit: 5,
+          // Trié par date décroissante par défaut sur l'API
         });
-    }
+        setTransactions(result);
+      } catch (error) {
+        console.error('Erreur lors du chargement des transactions:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    // Charger les taux de change
+    const retrieveCurrRates = async () => {
+      try {
+        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+        const rates = response?.data.rates;
+        const currRatesArray = ['USD', 'XOF', 'EUR'].map((key) => {
+          return { currency: key, rate: rates[key] };
+        });
+        setCurrRates(currRatesArray);
+      } catch (error) {
+        console.error('Error fetching currency rates:', error);
+        // Valeurs par défaut au cas où
+        setCurrRates([
+          { currency: 'USD', rate: 1 },
+          { currency: 'XOF', rate: 603.11 },
+          { currency: 'EUR', rate: 0.92 }
+        ]);
+      }
+    };
+
+    loadTransactions();
     retrieveCurrRates();
-  }
-  , []);
-
-  const balance = 1230.60
-  // Remplacez ces valeurs par vos propres données
-  // const balances = [
-  //   { id: 1, currency: 'US Dollar', amount: '1.230,60', flag: require('../../assets/flags/usd.jpg') },
-  //   { id: 2, currency: 'XOF', amount: '3.630,60', flag: require('../../assets/flags/xof.jpg') },
-  //   { id: 3, currency: 'Euro', amount: '830,40', flag: require('../../assets/flags/euro.jpg') },
-  // ];
+  }, []);
 
   const flagImages = {
     usd: require('../../assets/flags/usd.jpg'),
@@ -120,9 +89,9 @@ const HomeScreen = ({ navigation }) => {
 
   const balances = currRates.map((currRate, index) => ({
     id: index + 1,
-    amount: formatNumberWithCommas((balance * currRate.rate).toFixed(2)),
+    amount: formatNumberWithCommas((balance * (currRate.rate || 1)).toFixed(2)),
     currency: currRate.currency,
-    flag: flagImages[currRate.currency.toLowerCase()] || null, // Use the mapping object for flag images
+    flag: flagImages[currRate.currency.toLowerCase()] || null,
   }));
 
   return (
@@ -130,8 +99,8 @@ const HomeScreen = ({ navigation }) => {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header avec le titre et l'avatar */}
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, headerTextStyle]}>Balance</Text>
-          <TouchableOpacity  onPress={() => navigation.navigate('Profile')}>
+          <Text style={[styles.headerTitle, headerTextStyle]}>{t('balance', 'home')}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Image 
               source={require('../../assets/avatars/avatar2.jpg')}
               style={styles.avatar}
@@ -150,7 +119,6 @@ const HomeScreen = ({ navigation }) => {
               <View style={styles.flagContainer}>
                 <Image source={balance.flag} style={styles.flag} />
               </View>
-
               <View>
                 <Text style={[styles.balanceAmount, headerTextStyle]}>{balance.amount}</Text>
                 <Text style={[styles.balanceCurrency, secondaryTextStyle]}>{balance.currency}</Text>
@@ -162,106 +130,108 @@ const HomeScreen = ({ navigation }) => {
         {/* Section d'invitation */}
         <View style={styles.inviteContainer}>
           <View>
-            <Text style={[styles.inviteText, headerTextStyle]}>Invite your</Text>
-            <Text style={[styles.inviteText, headerTextStyle]}>friend now!</Text>
+            <Text style={[styles.inviteText, headerTextStyle]}>{t('inviteYour', 'home')}</Text>
+            <Text style={[styles.inviteText, headerTextStyle]}>{t('friendNow', 'home')}</Text>
           </View>
           <TouchableOpacity style={styles.earnButton}>
-            <Text style={styles.earnButtonText}>Earn $100</Text>
+            <Text style={styles.earnButtonText}>{t('earn100', 'home')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Section des transactions */}
-        <View style={styles.transactionSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, headerTextStyle]}>Transaction</Text>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('History');
-              }}
-            >
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Liste des transactions */}
-          {transactions.map((transaction) => (
-            <View key={transaction.id} style={styles.transactionItem}>
-              <View style={styles.transactionLeft}>
-                <Image source={transaction.avatar} style={styles.transactionAvatar} />
-                <View>
-                  <Text style={[styles.transactionName, headerTextStyle]}>{transaction.name}</Text>
-                  <View style={styles.transactionMeta}>
-                    <Text style={[styles.transactionType, secondaryTextStyle]}>{transaction.type}</Text>
-                    <Text style={[styles.transactionDate, secondaryTextStyle]}> • {transaction.date}</Text>
-                  </View>
-                </View>
-              </View>
-              <Text style={[
-                styles.transactionAmount, 
-                transaction.isPositive ? styles.positiveAmount : styles.negativeAmount
-              ]}>
-                {transaction.amount}
-              </Text>
-            </View>
-          ))}
-        </View>
+        <TransactionsList 
+          transactions={transactions}
+          isLoading={isLoading}
+          showHeader={true}
+          showDate={true}
+          limit={5}
+          onViewAll={() => navigation.navigate('History')}
+          navigation={navigation}
+          emptyMessage={t('noRecentTransactions', 'transactions')}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // Styles de base
   container: {
     flex: 1,
-    paddingTop: 20,
   },
   scrollView: {
     flex: 1,
+  },
+  darkContainer: {
+    backgroundColor: '#1A202C',
+  },
+  lightContainer: {
+    backgroundColor: '#F9FAFB',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+  },
+  darkHeaderText: {
+    color: '#F9FAFB',
+  },
+  lightHeaderText: {
+    color: '#1F2937',
+  },
+  darkSecondaryText: {
+    color: '#94A3B8',
+  },
+  lightSecondaryText: {
+    color: '#64748B',
   },
   balanceScrollContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
   },
   balanceCard: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: width * 0.4,
+    width: width * 0.75,
+    padding: 20,
     borderRadius: 16,
-    padding: 16,
     marginRight: 12,
-    height: 150,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  darkCard: {
+    backgroundColor: '#2D3748',
+  },
+  lightCard: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   flagContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginRight: 16,
+    overflow: 'hidden',
+    backgroundColor: '#F3F4F6',
   },
   flag: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    resizeMode: 'cover',
   },
   balanceAmount: {
     fontSize: 24,
@@ -272,122 +242,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inviteContainer: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: '#3B82F6',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#E0F2FE',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 16,
-    padding: 16,
   },
   inviteText: {
-    fontSize: 20,
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: '600',
-    color: '#0C4A6E',
   },
   earnButton: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   earnButtonText: {
-    color: 'white',
+    color: '#3B82F6',
     fontWeight: '600',
-    fontSize: 18,
-  },
-  transactionSection: {
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  viewAllText: {
-    fontSize: 16,
-    color: '#1E40AF',
-    textDecorationLine: 'underline',
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  transactionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionAvatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 40,
-    marginRight: 12,
-  },
-  transactionName: {
-    fontWeight: '600',
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  transactionMeta: {
-    flexDirection: 'row',
-  },
-  transactionType: {
-    fontSize: 16,
-  },
-  transactionDate: {
-    fontSize: 16,
-  },
-  transactionAmount: {
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  positiveAmount: {
-    color: '#10B981',
-  },
-  negativeAmount: {
-    color: '#EF4444',
-  },
-  
-  // Styles pour le mode clair
-  lightContainer: {
-    backgroundColor: '#FFFFFF',
-  },
-  lightCard: {
-    backgroundColor: '#F3F4F6',
-  },
-  lightText: {
-    color: '#374151',
-  },
-  lightHeaderText: {
-    color: '#111827',
-  },
-  lightSecondaryText: {
-    color: '#6B7280',
-  },
-  
-  // Styles pour le mode sombre
-  darkContainer: {
-    backgroundColor: '#0F172A',
-  },
-  darkCard: {
-    backgroundColor: '#1E293B',
-  },
-  darkText: {
-    color: '#E5E7EB',
-  },
-  darkHeaderText: {
-    color: '#F9FAFB',
-  },
-  darkSecondaryText: {
-    color: '#9CA3AF',
   },
 });
 

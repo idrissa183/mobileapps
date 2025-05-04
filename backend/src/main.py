@@ -9,8 +9,11 @@ from src.config.settings import get_settings
 from src.database.connection import init_db, close_db_connection
 from src.api.v1.auth import router as auth_router
 from src.api.v1.student import router as student_router
-from src.api.v1.banking import router as banking_router
+# from src.api.v1.banking import router as banking_router
 from src.api.v1.clothes import router as clothes_router
+from src.api.v1.card import router as card_router
+from src.api.v1.contact import router as contact_router
+from src.api.v1.transaction import router as transaction_router
 
 
 
@@ -70,8 +73,11 @@ async def health_check():
 
 # Include routers with prefix
 app.include_router(auth_router, prefix=f"{settings.API_PREFIX}/auth", tags=["Authentication"])
+app.include_router(card_router, prefix=f"{settings.API_PREFIX}/banking", tags=["Cards"])
+app.include_router(contact_router, prefix=f"{settings.API_PREFIX}/banking", tags=["Contacts"])
+app.include_router(transaction_router, prefix=f"{settings.API_PREFIX}/banking", tags=["Transactions"])
 app.include_router(student_router, prefix=f"{settings.API_PREFIX}/student", tags=["Student App"])
-app.include_router(banking_router, prefix=f"{settings.API_PREFIX}/banking", tags=["Banking App"])
+# app.include_router(banking_router, prefix=f"{settings.API_PREFIX}/banking", tags=["Banking App"])
 app.include_router(clothes_router, prefix=f"{settings.API_PREFIX}/clothes", tags=["Clothes App"])
 
 
