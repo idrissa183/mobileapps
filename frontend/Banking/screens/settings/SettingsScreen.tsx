@@ -11,7 +11,8 @@ import {
   Modal,
   FlatList,
   Image,
-  Platform
+  Platform,
+  ActivityIndicator
 } from "react-native";
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,8 +21,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { Linking } from 'react-native';
 import useAuth from "../../hooks/useAuth";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MainTabParamList } from '../../App';
-import { CommonActions } from '@react-navigation/native';
+import { RootStackParamList } from '../../navigation/types'; // Assurez-vous que ce chemin est correct
+
+// Type pour la navigation
+type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 // Define available languages with proper typing
 interface Language {
@@ -35,8 +38,6 @@ const languages: Language[] = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
   { id: 'fr', name: 'Français', flag: require('../../assets/flags/france.png') },
 ];
-
-type Props = NativeStackScreenProps<MainTabParamList, 'Settings'>;
 
 // Define setting item interfaces for type safety
 interface SettingItemProps {
@@ -71,6 +72,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const [locationEnabled, setLocationEnabled] = useState<boolean>(false);
   const [langModalVisible, setLangModalVisible] = useState<boolean>(false);
   const [locationServiceStatus, setLocationServiceStatus] = useState<string>('unknown');
+  const [logoutModalVisible, setLogoutModalVisible] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const { resetPassword, logout } = useAuth();
 
   useEffect(() => {
@@ -180,18 +183,28 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     toggleTheme();
   };
 
-  // Handle logout
+  // Show logout confirmation modal
+  const showLogoutConfirmation = (): void => {
+    setLogoutModalVisible(true);
+  };
+
+  // Handle actual logout process
   const handleLogout = async (): Promise<void> => {
     try {
+      setIsLoggingOut(true); // Activer l'indicateur de chargement
       await logout();
-
-      navigation.dispatch(
-        CommonActions.reset({
+      
+      // Permettre à l'utilisateur de voir l'indicateur de chargement pendant un moment
+      setTimeout(() => {
+        setLogoutModalVisible(false);
+        // Assurez-vous que ce nom correspond à un écran dans votre NavigationContainer
+        navigation.reset({
           index: 0,
-          routes: [{ name: 'SignIn' }],
-        })
-      );
+          routes: [{ name: 'AuthStack' }], // Utilisez le nom de la pile d'authentification
+        });
+      }, 500);
     } catch (error: any) {
+      setIsLoggingOut(false); // Désactiver l'indicateur en cas d'erreur
       if (error.response) {
         Alert.alert(
           t('error', 'common'),
@@ -399,13 +412,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
         <View style={{ width: 24 }} />
       </View>
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#6366F1' : '#4F46E5'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
-        <View style={styles.headerRight} />
-      </View> */}
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Account Section */}
@@ -511,7 +517,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                   icon={setting.icon}
                   title={setting.title}
                   subtitle={setting.subtitle}
-                  onPress={() => setting.onPress}
+                  onPress={setting.onPress}
                 />
               )}
               {index < privacySettings.length - 1 && <View style={styles.divider} />}
@@ -535,13 +541,13 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           ))}
         </Section>
 
-        {/* Logout Button */}
+        {/* Logout Button - Now opens confirmation modal */}
         <TouchableOpacity
           style={[
             styles.logoutButton,
             isDarkMode && styles.logoutButtonDark
           ]}
-          onPress={handleLogout}
+          onPress={showLogoutConfirmation}
           accessibilityLabel={t('logout', 'auth')}
           accessibilityRole="button"
           accessible={true}
@@ -598,6 +604,67 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, isDarkMode ? styles.darkModal : styles.lightModal]}>
+            <View style={styles.logoutModalContent}>
+              {isLoggingOut ? (
+                <>
+                  <ActivityIndicator size="large" color="#6366F1" style={styles.loadingIndicator} />
+                  <Text style={[styles.logoutModalMessage, secondaryTextStyle]}>
+                    {t('loggingOut', 'auth') || 'Logging out...'}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <View style={styles.logoutIconContainer}>
+                    <Ionicons 
+                      name="log-out-outline" 
+                      size={40} 
+                      color="#6366F1"
+                    />
+                  </View>
+                  
+                  <Text style={[styles.logoutModalTitle, headerTextStyle]}>
+                    {t('confirmLogout', 'auth') || 'Confirm Logout'}
+                  </Text>
+                  
+                  <Text style={[styles.logoutModalMessage, secondaryTextStyle]}>
+                    {t('logoutConfirmMessage', 'auth') || 'Are you sure you want to log out of your account?'}
+                  </Text>
+                  
+                  <View style={styles.logoutModalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.cancelButton]}
+                      onPress={() => setLogoutModalVisible(false)}
+                    >
+                      <Text style={styles.cancelButtonText}>
+                        {t('cancel', 'common') || 'Cancel'}
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.confirmButton]}
+                      onPress={handleLogout}
+                    >
+                      <Text style={styles.confirmButtonText}>
+                        {t('logout', 'auth') || 'Logout'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -617,6 +684,10 @@ const colors = {
     logout: '#DC2626',
     logoutDark: '#B91C1C',
     selectedItem: '#EEF2FF',
+    cancelButton: '#E5E7EB',
+    cancelText: '#4B5563',
+    confirmButton: '#DC2626',
+    confirmText: '#FFFFFF',
   },
   dark: {
     background: '#0F172A',
@@ -631,6 +702,10 @@ const colors = {
     logout: '#EF4444',
     logoutDark: '#DC2626',
     selectedItem: '#312E81',
+    cancelButton: '#334155',
+    cancelText: '#F1F5F9',
+    confirmButton: '#EF4444', 
+    confirmText: '#FFFFFF',
   }
 };
 
@@ -848,16 +923,67 @@ const styles = StyleSheet.create({
   themeSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
   },
   quickThemeToggle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
+  },
+  // Logout modal styles
+  logoutModalContent: {
+    alignItems: 'center',
+    padding: 16,
+  },
+  logoutIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoutModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  logoutModalMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  logoutModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.light.cancelButton,
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: colors.light.cancelText,
+    fontWeight: '600',
+  },
+  confirmButton: {
+    backgroundColor: colors.light.confirmButton,
+    marginLeft: 8,
+  },
+  confirmButtonText: {
+    color: colors.light.confirmText,
+    fontWeight: '600',
   },
 });
 
