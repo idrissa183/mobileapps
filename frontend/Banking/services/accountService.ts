@@ -2,7 +2,6 @@ import api from './api';
 import { AxiosResponse } from 'axios';
 import { Currency } from './transactionService';
 
-// Account interface matching backend model
 export interface Account {
     id: string;
     account_number: string;
@@ -11,38 +10,56 @@ export interface Account {
     currency: Currency;
     is_active: boolean;
     is_primary: boolean;
-    created_at: string; // ISO datetime format
-    updated_at: string; // ISO datetime format
-    last_transaction?: string | null; // ISO datetime format
-}
-
-export interface AccountSummary {
-    id: string;
-    account_number: string;
-    account_name: string;
-    balance: number;
-    currency: Currency;
+    created_at: string;
+    updated_at: string;
+    last_transaction: string | null;
 }
 
 const accountService = {
-    // Get account details for the current user
-    getAccountDetails: async (): Promise<Account> => {
+    /**
+     * Récupère le compte bancaire de l'utilisateur connecté
+     * Cette fonction utilise les transactions pour récupérer le compte associé
+     */
+    getUserAccount: async (): Promise<Account> => {
         try {
-            const response: AxiosResponse<Account> = await api.get('/banking/accounts/current');
-            return response.data;
+            const response: AxiosResponse<any[]> = await api.get('/banking/transactions', {
+                params: {
+                    limit: 1
+                }
+            });
+
+            if (response.data && response.data.length > 0) {
+                const accountId = response.data[0].account_id;
+
+                const accountResponse: AxiosResponse<Account> = await api.get(`/banking/accounts`);
+                return accountResponse.data;
+            } else {
+                throw new Error('Aucune transaction trouvée pour récupérer le compte');
+            }
         } catch (error) {
-            console.error('Error fetching account details:', error);
+            console.error('Erreur lors de la récupération du compte:', error);
             throw error;
         }
     },
 
-    // Get account summary (used in dashboard or quick views)
-    getAccountSummary: async (): Promise<AccountSummary> => {
+    /**
+     * Convertit le montant d'une devise à une autre
+     */
+    convertCurrency: async (
+        amount: number,
+        fromCurrency: Currency,
+        toCurrency: Currency
+    ): Promise<number> => {
         try {
-            const response: AxiosResponse<AccountSummary> = await api.get('/banking/accounts/summary');
-            return response.data;
+            const response: AxiosResponse<any> = await api.post('/banking/currency/convert', {
+                from_currency: fromCurrency,
+                to_currency: toCurrency,
+                amount: amount
+            });
+
+            return response.data.converted_amount;
         } catch (error) {
-            console.error('Error fetching account summary:', error);
+            console.error('Erreur lors de la conversion de devise:', error);
             throw error;
         }
     }

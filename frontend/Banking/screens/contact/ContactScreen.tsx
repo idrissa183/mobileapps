@@ -191,12 +191,12 @@ const ContactScreen: React.FC = () => {
         </View>
 
         {/* Error Display */}
-        {error && (
+        {/* {error && (
           <View style={[styles.errorContainer, cardStyle]}>
             <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
-        )}
+        )} */}
 
         {/* Loading Indicator */}
         {loading && !refreshing && (

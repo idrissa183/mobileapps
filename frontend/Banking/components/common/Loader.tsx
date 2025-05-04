@@ -9,19 +9,19 @@ interface LoaderProps {
   fullScreen?: boolean;
 }
 
-const Loader: React.FC<LoaderProps> = ({ 
-  size = 'large', 
-  text, 
-  fullScreen = false 
+const Loader: React.FC<LoaderProps> = ({
+  size = 'large',
+  text,
+  fullScreen = false
 }) => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  
+
   const loaderText = text || t('loading', 'common');
-  
+
   const getContainerStyles = (): StyleProp<ViewStyle>[] => {
     const containerStyles: StyleProp<ViewStyle>[] = [styles.container];
-    
+
     if (fullScreen) {
       containerStyles.push(styles.fullScreen);
       containerStyles.push(
@@ -30,22 +30,22 @@ const Loader: React.FC<LoaderProps> = ({
     } else {
       containerStyles.push(styles.inline);
     }
-    
+
     return containerStyles;
   };
-  
+
   const getTextStyles = (): StyleProp<TextStyle>[] => {
     return [
       styles.text,
       isDarkMode ? styles.textDark : styles.textLight
     ];
   };
-  
+
   return (
     <View style={getContainerStyles()}>
-      <ActivityIndicator 
-        size={size} 
-        color={isDarkMode ? '#60A5FA' : '#3B82F6'} 
+      <ActivityIndicator
+        size={size}
+        color={isDarkMode ? '#60A5FA' : '#3B82F6'}
       />
       {loaderText && (
         <Text style={getTextStyles()}>
@@ -82,54 +82,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   textLight: {
-    color: '#374151', // text-gray-700
+    color: '#374151',
   },
   textDark: {
-    color: '#D1D5DB', // text-gray-300
+    color: '#D1D5DB',
   },
 });
 
 export default Loader;
-
-
-
-
-
-
-// import React from 'react';
-// import { View, ActivityIndicator, Text } from 'react-native';
-// import { useTheme } from '../../hooks/useTheme';
-// import { useTranslation } from '../../hooks/useTranslation';
-
-// interface LoaderProps {
-//   size?: 'small' | 'large';
-//   text?: string;
-//   fullScreen?: boolean;
-// }
-
-// const Loader: React.FC<LoaderProps> = ({ 
-//   size = 'large', 
-//   text, 
-//   fullScreen = false 
-// }) => {
-//   const { isDarkMode } = useTheme();
-//   const { t } = useTranslation();
-  
-//   const loaderText = text || t('loading', 'common');
-  
-//   return (
-//     <View 
-//       className={`items-center justify-center ${fullScreen ? 'flex-1 absolute inset-0' : 'py-4'}`}
-//       style={fullScreen ? { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)' } : {}}
-//     >
-//       <ActivityIndicator size={size} color={isDarkMode ? '#60A5FA' : '#3B82F6'} />
-//       {loaderText && (
-//         <Text className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-//           {loaderText}
-//         </Text>
-//       )}
-//     </View>
-//   );
-// };
-
-// export default Loader;

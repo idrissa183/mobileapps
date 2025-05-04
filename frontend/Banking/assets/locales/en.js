@@ -64,7 +64,7 @@ export default {
     rememberPassword: 'Remember your password?',
     backToLogin: 'Back to Login',
     sendResetLink: 'Send Reset Link',
-    logout: 'Logout',
+    logout: 'Log Out',
     confirmLogout: 'Are you sure you want to log out?',
     verifyYourEmail: "Verify Your Email",
     otpSentTo: "We've sent a verification code to",
@@ -84,6 +84,7 @@ export default {
     loginFailed: "Login Failed",
     incorrectCredentials: "Incorrect email or password.",
     accountInactive: "Your account is inactive. Please contact support.",
+    logoutConfirm: "Confirm",
 
   },
   common: {

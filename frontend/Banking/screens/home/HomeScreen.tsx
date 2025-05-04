@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
-import transactionService, { Transaction } from '../../services/transactionService';
-import axios from 'axios';
-import useTheme from '../../hooks/useTheme';
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import transactionService, { Transaction, Currency } from '../../services/transactionService';
+import accountService from '../../services/accountService';
+import { MainTabParamList } from '../../App';
 import useTranslation from '../../hooks/useTranslation';
 import TransactionsList from '../history/TransactionList';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MainTabParamList } from '../../App';
 
 const { width } = Dimensions.get('window');
+
 type Props = NativeStackScreenProps<MainTabParamList, 'Home'>;
+
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
@@ -30,63 +23,109 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [balanceLoading, setBalanceLoading] = useState(true);
   
-  const [currRates, setCurrRates] = useState<{ currency: string; rate: number | null }[]>([]);
-  const [balance, setBalance] = useState(1230.60);
+  const [balances, setBalances] = useState<Array<{
+    id: number;
+    amount: string;
+    currency: string;
+    flag: any;
+    loading: boolean;
+  }>>([
+    { id: 1, amount: '0.00', currency: Currency.USD, flag: require('../../assets/flags/usd.jpg'), loading: true },
+    { id: 2, amount: '0.00', currency: Currency.XOF, flag: require('../../assets/flags/xof.jpg'), loading: true },
+    { id: 3, amount: '0.00', currency: Currency.EUR, flag: require('../../assets/flags/eur.jpg'), loading: true },
+  ]);
 
   useEffect(() => {
-    const loadTransactions = async () => {
+    const loadUserData = async () => {
       try {
         setIsLoading(true);
-        const result = await transactionService.getTransactions({ 
+        setBalanceLoading(true);
+        
+        const recentTransactions = await transactionService.getTransactions({ 
           limit: 5,
         });
-        setTransactions(result);
+        setTransactions(recentTransactions);
+        
+        const userAccount = await accountService.getUserAccount();
+        
+        const updatedBalances = [...balances];
+        const usdIndex = updatedBalances.findIndex(b => b.currency === Currency.USD);
+        if (usdIndex !== -1) {
+          updatedBalances[usdIndex] = {
+            ...updatedBalances[usdIndex],
+            amount: formatNumberWithCommas(userAccount.balance.toFixed(2)),
+            loading: false
+          };
+        }
+        
+        setBalances(updatedBalances);
+        
+        await convertBalancesToOtherCurrencies(userAccount.balance);
+        
       } catch (error) {
-        console.error('Erreur lors du chargement des transactions:', error);
+        console.error('Erreur lors du chargement des données:', error);
       } finally {
         setIsLoading(false);
+        setBalanceLoading(false);
       }
     };
 
-    const retrieveCurrRates = async () => {
-      try {
-        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
-        const rates = response?.data.rates;
-        const currRatesArray = ['USD', 'XOF', 'EUR'].map((key) => {
-          return { currency: key, rate: rates[key] };
-        });
-        setCurrRates(currRatesArray);
-      } catch (error) {
-        console.error('Error fetching currency rates:', error);
-        setCurrRates([
-          { currency: 'USD', rate: 1 },
-          { currency: 'XOF', rate: 603.11 },
-          { currency: 'EUR', rate: 0.92 }
-        ]);
-      }
-    };
-
-    loadTransactions();
-    retrieveCurrRates();
+    loadUserData();
   }, []);
 
-  const flagImages = {
-    usd: require('../../assets/flags/usd.jpg'),
-    xof: require('../../assets/flags/xof.jpg'),
-    eur: require('../../assets/flags/eur.jpg'),
+  const convertBalancesToOtherCurrencies = async (usdBalance: number) => {
+    try {
+      const updatedBalances = [...balances];
+      
+      const eurIndex = updatedBalances.findIndex(b => b.currency === Currency.EUR);
+      if (eurIndex !== -1) {
+        try {
+          const eurAmount = await accountService.convertCurrency(
+            usdBalance,
+            Currency.USD,
+            Currency.EUR
+          );
+          updatedBalances[eurIndex] = {
+            ...updatedBalances[eurIndex],
+            amount: formatNumberWithCommas(eurAmount.toFixed(2)),
+            loading: false
+          };
+        } catch (err) {
+          console.error('Erreur lors de la conversion en EUR:', err);
+          updatedBalances[eurIndex].loading = false;
+        }
+      }
+      
+      const xofIndex = updatedBalances.findIndex(b => b.currency === Currency.XOF);
+      if (xofIndex !== -1) {
+        try {
+          const xofAmount = await accountService.convertCurrency(
+            usdBalance,
+            Currency.USD,
+            Currency.XOF
+          );
+          updatedBalances[xofIndex] = {
+            ...updatedBalances[xofIndex],
+            amount: formatNumberWithCommas(xofAmount.toFixed(2)),
+            loading: false
+          };
+        } catch (err) {
+          console.error('Erreur lors de la conversion en XOF:', err);
+          updatedBalances[xofIndex].loading = false;
+        }
+      }
+      
+      setBalances(updatedBalances);
+    } catch (error) {
+      console.error('Erreur lors de la conversion des devises:', error);
+    }
   };
 
-  const formatNumberWithCommas = (number: number) => {
+  const formatNumberWithCommas = (number: string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
-
-  const balances = currRates.map((currRate, index) => ({
-    id: index + 1,
-    amount: formatNumberWithCommas((balance * (currRate.rate || 1)).toFixed(2)),
-    currency: currRate.currency,
-    flag: flagImages[currRate.currency.toLowerCase()] || null,
-  }));
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
@@ -114,8 +153,14 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 <Image source={balance.flag} style={styles.flag} />
               </View>
               <View>
-                <Text style={[styles.balanceAmount, headerTextStyle]}>{balance.amount}</Text>
-                <Text style={[styles.balanceCurrency, secondaryTextStyle]}>{balance.currency}</Text>
+                {balance.loading ? (
+                  <ActivityIndicator size="small" color="#3B82F6" />
+                ) : (
+                  <>
+                    <Text style={[styles.balanceAmount, headerTextStyle]}>{balance.amount}</Text>
+                    <Text style={[styles.balanceCurrency, secondaryTextStyle]}>{balance.currency}</Text>
+                  </>
+                )}
               </View>
             </View>
           ))}

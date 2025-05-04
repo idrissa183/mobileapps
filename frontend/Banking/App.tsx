@@ -31,8 +31,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import useAuth from './hooks/useAuth';
 import { Transaction } from './services/transactionService';
 import TransactionDetailScreen from './screens/history/TransactionDetailScreen';
-import { ActivityIndicator } from 'react-native';
-import { View } from 'react-native';
 
 // Types
 export type RootStackParamList = {
@@ -75,14 +73,15 @@ const MainAppTabs = () => {
 };
 
 const Navigation = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-      </View>
-    );
-  }
+  const { isAuthenticated } = useAuth();
+
+  // if (isLoading) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //       <ActivityIndicator size="large" color="#3B82F6" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <NavigationContainer>

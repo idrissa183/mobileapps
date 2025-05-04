@@ -21,12 +21,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { Linking } from 'react-native';
 import useAuth from "../../hooks/useAuth";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/types'; // Assurez-vous que ce chemin est correct
+import { MainTabParamList } from '../../App';
 
-// Type pour la navigation
-type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+type Props = NativeStackScreenProps<MainTabParamList, 'Settings'>;
 
-// Define available languages with proper typing
 interface Language {
   id: string;
   name: string;
@@ -38,7 +36,6 @@ const languages: Language[] = [
   { id: 'fr', name: 'Français', flag: require('../../assets/flags/france.png') },
 ];
 
-// Define setting item interfaces for type safety
 interface SettingItemProps {
   icon: React.ReactNode;
   title: string;
@@ -177,28 +174,24 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     toggleTheme();
   };
 
-  // Show logout confirmation modal
   const showLogoutConfirmation = (): void => {
     setLogoutModalVisible(true);
   };
 
-  // Handle actual logout process
   const handleLogout = async (): Promise<void> => {
     try {
-      setIsLoggingOut(true); // Activer l'indicateur de chargement
+      setIsLoggingOut(true); 
       await logout();
       
-      // Permettre à l'utilisateur de voir l'indicateur de chargement pendant un moment
       setTimeout(() => {
         setLogoutModalVisible(false);
-        // Assurez-vous que ce nom correspond à un écran dans votre NavigationContainer
         navigation.reset({
           index: 0,
-          routes: [{ name: 'AuthStack' }], // Utilisez le nom de la pile d'authentification
+          routes: [{ name: 'AuthStack' }],
         });
       }, 500);
     } catch (error: any) {
-      setIsLoggingOut(false); // Désactiver l'indicateur en cas d'erreur
+      setIsLoggingOut(false);
       if (error.response) {
         Alert.alert(
           t('error', 'common'),
@@ -512,7 +505,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                   icon={setting.icon}
                   title={setting.title}
                   subtitle={setting.subtitle}
-                  onPress={setting.onPress}
+                  onPress={() => setting.onPress}
                 />
               )}
               {index < privacySettings.length - 1 && <View style={styles.divider} />}
@@ -631,9 +624,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                     {t('confirmLogout', 'auth') || 'Confirm Logout'}
                   </Text>
                   
-                  <Text style={[styles.logoutModalMessage, secondaryTextStyle]}>
-                    {t('logoutConfirmMessage', 'auth') || 'Are you sure you want to log out of your account?'}
-                  </Text>
                   
                   <View style={styles.logoutModalButtons}>
                     <TouchableOpacity
@@ -650,7 +640,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                       onPress={handleLogout}
                     >
                       <Text style={styles.confirmButtonText}>
-                        {t('logout', 'auth') || 'Logout'}
+                        {t('logoutConfirm', 'auth')}
                       </Text>
                     </TouchableOpacity>
                   </View>

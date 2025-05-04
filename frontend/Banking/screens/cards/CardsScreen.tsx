@@ -15,10 +15,11 @@ import {
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
-import transactionService, { TransactionType, Currency, TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
+import transactionService, {TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';
 import { useNavigation } from '@react-navigation/native';
 import contactService, { Contact } from '../../services/contactService';
+import accountService from '../../services/accountService';
 
 const { width } = Dimensions.get('window');
 
@@ -43,6 +44,8 @@ const CardsScreen: React.FC = () => {
   const [isCvvVisible, setIsCvvVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cardsLoading, setCardsLoading] = useState(true);
+  const [balance, setBalance] = useState<number>(0);
+  const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
 
   // New Card Modal states
   const [isNewCardModalVisible, setIsNewCardModalVisible] = useState(false);
@@ -66,7 +69,21 @@ const CardsScreen: React.FC = () => {
   useEffect(() => {
     fetchCards();
     fetchContacts();
+    fetchBalance();
   }, []);
+
+   // Function to fetch user balance
+   const fetchBalance = async () => {
+    setBalanceLoading(true);
+    try {
+      const userAccount = await accountService.getUserAccount();
+      setBalance(userAccount.balance);
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
 
   // Function to fetch cards
   const fetchCards = async () => {
@@ -155,6 +172,7 @@ const CardsScreen: React.FC = () => {
       await transactionService.depositMoney(depositData);
       setIsTopUpModalVisible(false);
       resetTransactionInputs();
+      fetchBalance();
 
     } catch (error) {
       console.error('Error depositing money:', error);
@@ -179,6 +197,7 @@ const CardsScreen: React.FC = () => {
       await transactionService.withdrawMoney(withdrawalData);
       setIsWithdrawModalVisible(false);
       resetTransactionInputs();
+      fetchBalance();
 
     } catch (error) {
       console.error('Error withdrawing money:', error);
@@ -204,6 +223,7 @@ const CardsScreen: React.FC = () => {
       await transactionService.transferMoney(transferData);
       setIsTransferModalVisible(false);
       resetTransactionInputs();
+      fetchBalance();
 
     } catch (error) {
       console.error('Error transferring money:', error);
@@ -237,7 +257,6 @@ const CardsScreen: React.FC = () => {
     return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
   };
 
-  const balance = 1230.60;
 
   const CreateCardButton = () => (
     <TouchableOpacity
@@ -264,7 +283,11 @@ const CardsScreen: React.FC = () => {
       <View style={[styles.balanceContainer, balanceContainerStyle]}>
         <View>
           <Text style={[styles.currencyLabel, secondaryTextStyle]}>{t('currency.usd')}</Text>
-          <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(balance.toFixed(2))}</Text>
+          {balanceLoading ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : (
+            <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(parseFloat(balance.toFixed(2)))}</Text>
+          )}
         </View>
         <TouchableOpacity
           style={styles.topUpButton}

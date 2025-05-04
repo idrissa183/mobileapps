@@ -544,6 +544,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop:10,
   },
   loadingText: {
     marginTop: 16,

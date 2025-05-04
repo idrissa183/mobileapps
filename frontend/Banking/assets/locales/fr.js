@@ -83,7 +83,9 @@ export default {
     success: "Succès",
     loginFailed: "Échec de la connexion",
     incorrectCredentials: "Email ou mot de passe incorrect.",
-    accountInactive: "Votre compte est inactif. Veuillez contacter le support."
+    accountInactive: "Votre compte est inactif. Veuillez contacter le support.",
+    logoutConfirm: "Confirmer",
+
   },
   common: {
     loading: 'Chargement...',
