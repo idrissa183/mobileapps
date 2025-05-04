@@ -43,20 +43,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
     const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
 
-    // Formatage des montants avec le bon signe
     const formatAmount = (amount: number, type: TransactionType) => {
         const prefix = (type === TransactionType.DEPOSIT ||
             (type === TransactionType.TRANSFER && amount > 0)) ? '+' : '';
         return `${prefix}$${Math.abs(amount).toFixed(2)}`;
     };
 
-    // Déterminer si une transaction est positive
     const isPositiveTransaction = (transaction: Transaction) => {
         return transaction.transaction_type === TransactionType.DEPOSIT ||
             (transaction.transaction_type === TransactionType.TRANSFER && transaction.amount > 0);
     };
 
-    // Formatage de la date
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const today = new Date();
@@ -72,7 +69,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
         }
     };
 
-    // Déterminer l'icône appropriée pour chaque type de transaction
     const getTransactionIcon = (transaction: Transaction) => {
         switch (transaction.transaction_type) {
             case TransactionType.DEPOSIT:
@@ -90,7 +86,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
         }
     };
 
-    // Déterminer le nom/description à afficher
     const getTransactionName = (transaction: Transaction) => {
         if (transaction.transaction_type === TransactionType.TRANSFER) {
             if (transaction.amount < 0) {
@@ -106,15 +101,12 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
         return transaction.description || '';
     };
 
-    // Limiter le nombre de transactions si nécessaire
     const displayTransactions = limit && transactions ? transactions.slice(0, limit) : transactions;
 
-    // Gérer l'état de chargement
     if (isLoading) {
         return <Loader text={t('loadingTransactions', 'transactions')} />;
     }
 
-    // Gérer l'état vide
     if (!transactions || transactions.length === 0) {
         return (
             <View style={styles.emptyContainer}>

@@ -8,15 +8,20 @@ import {
   Image, 
   TouchableOpacity,
   Switch,
-  Dimensions
+  Dimensions,
+  Alert,
+  ActivityIndicator
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
+import authService from '../../services/authService';
 
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const cardStyle = isDarkMode ? styles.darkCard : styles.lightCard;
@@ -24,23 +29,66 @@ const ProfileScreen = ({ navigation }) => {
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const dividerStyle = isDarkMode ? styles.darkDivider : styles.lightDivider;
 
-  const userData = {
-    name: 'Alberto Montero',
-    email: 'alberto.montero@example.com',
-    phone: '+1 234 567 890',
-    avatar: require('../../assets/avatars/avatar2.jpg'),
-    totalTransactions: 47,
-    joined: 'August 2023'
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const user = await authService.getUser();
+      setUserData(user);
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de récupérer vos informations');
+      console.error('Erreur lors de la récupération des informations utilisateur:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Confirmation',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Déconnexion', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.logout();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            } catch (error) {
+              Alert.alert('Erreur', 'Échec de la déconnexion');
+            }
+          } 
+        }
+      ]
+    );
   };
 
   const menuItems = [
-    { id: 1, title: 'Personal Information', icon: '👤', screen: 'PersonalInfo' },
-    { id: 2, title: 'Payment Methods', icon: '💳', screen: 'PaymentMethods' },
-    { id: 3, title: 'Transaction History', icon: '📊', screen: 'History' },
-    { id: 4, title: 'Invite Friends', icon: '👥', screen: 'InviteFriends' },
-    { id: 5, title: 'Help & Support', icon: '❓', screen: 'Support' },
-    { id: 6, title: 'Terms & Privacy', icon: '📜', screen: 'Terms' },
+    { id: 1, title: 'Informations Personnelles', icon: '👤', screen: 'PersonalInfo' },
+    { id: 2, title: 'Méthodes de Paiement', icon: '💳', screen: 'PaymentMethods' },
+    { id: 3, title: 'Historique des Transactions', icon: '📊', screen: 'History' },
+    { id: 4, title: 'Inviter des Amis', icon: '👥', screen: 'InviteFriends' },
+    { id: 5, title: 'Aide & Support', icon: '❓', screen: 'Support' },
+    { id: 6, title: 'Conditions & Confidentialité', icon: '📜', screen: 'Terms' },
+    { id: 7, title: 'Changer le Mot de Passe', icon: '🔒', screen: 'ChangePassword' },
   ];
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, containerStyle, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#1E40AF" />
+        <Text style={[styles.loadingText, headerTextStyle]}>Chargement du profil...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
@@ -50,49 +98,66 @@ const ProfileScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={[styles.backButton, headerTextStyle]}>←</Text>
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, headerTextStyle]}>Profile</Text>
+          <Text style={[styles.headerTitle, headerTextStyle]}>Profil</Text>
           <View style={{ width: 24 }} /> {/* Espace pour équilibrer le header */}
         </View>
 
         {/* Section du profil utilisateur */}
         <View style={[styles.profileCard, cardStyle]}>
           <View style={styles.profileInfo}>
-            <Image source={userData.avatar} style={styles.profileAvatar} />
+            <Image 
+              source={userData?.profile_image 
+                ? { uri: userData.profile_image } 
+                : require('../../assets/avatars/avatar2.jpg')} 
+              style={styles.profileAvatar} 
+            />
             <View style={styles.profileDetails}>
-              <Text style={[styles.profileName, headerTextStyle]}>{userData.name}</Text>
-              <Text style={[styles.profileEmail, secondaryTextStyle]}>{userData.email}</Text>
+              <Text style={[styles.profileName, headerTextStyle]}>{userData?.full_name || 'Utilisateur'}</Text>
+              <Text style={[styles.profileEmail, secondaryTextStyle]}>{userData?.email || 'utilisateur@exemple.com'}</Text>
+              {userData?.phone && (
+                <Text style={[styles.profilePhone, secondaryTextStyle]}>{userData.phone}</Text>
+              )}
             </View>
           </View>
           <TouchableOpacity 
             style={styles.editButton}
-            onPress={() => navigation.navigate('EditProfile')}
+            onPress={() => navigation.navigate('EditProfile', { userData })}
           >
-            <Text style={styles.editButtonText}>Edit</Text>
+            <Text style={styles.editButtonText}>Modifier</Text>
           </TouchableOpacity>
         </View>
 
         {/* Statistiques utilisateur */}
         <View style={[styles.statsCard, cardStyle]}>
           <View style={styles.statItem}>
-            <Text style={[styles.statNumber, headerTextStyle]}>{userData.totalTransactions}</Text>
+            <Text style={[styles.statNumber, headerTextStyle]}>
+              {userData?.transactions_count || 0}
+            </Text>
             <Text style={[styles.statLabel, secondaryTextStyle]}>Transactions</Text>
           </View>
           <View style={[styles.statDivider, dividerStyle]} />
           <View style={styles.statItem}>
-            <Text style={[styles.statLabel, secondaryTextStyle]}>Member since</Text>
-            <Text style={[styles.statValue, headerTextStyle]}>{userData.joined}</Text>
+            <Text style={[styles.statLabel, secondaryTextStyle]}>Membre depuis</Text>
+            <Text style={[styles.statValue, headerTextStyle]}>
+              {userData?.created_at 
+                ? new Date(userData.created_at).toLocaleDateString('fr-FR', { 
+                    year: 'numeric', 
+                    month: 'long' 
+                  }) 
+                : 'Non disponible'}
+            </Text>
           </View>
         </View>
 
         {/* Paramètres */}
         <View style={styles.settingsSection}>
-          <Text style={[styles.sectionTitle, headerTextStyle]}>Settings</Text>
+          <Text style={[styles.sectionTitle, headerTextStyle]}>Paramètres</Text>
           
           <View style={[styles.settingCard, cardStyle]}>
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
                 <Text style={styles.settingIcon}>🌓</Text>
-                <Text style={[styles.settingText, headerTextStyle]}>Dark Mode</Text>
+                <Text style={[styles.settingText, headerTextStyle]}>Mode Sombre</Text>
               </View>
               <Switch
                 trackColor={{ false: "#767577", true: "#1E40AF" }}
@@ -130,7 +195,7 @@ const ProfileScreen = ({ navigation }) => {
               <React.Fragment key={item.id}>
                 <TouchableOpacity 
                   style={styles.menuItem}
-                  onPress={() => navigation.navigate(item.screen)}
+                  onPress={() => navigation.navigate(item.screen, { userData })}
                 >
                   <View style={styles.menuLeft}>
                     <Text style={styles.menuIcon}>{item.icon}</Text>
@@ -149,12 +214,9 @@ const ProfileScreen = ({ navigation }) => {
         {/* Bouton de déconnexion */}
         <TouchableOpacity 
           style={styles.logoutButton}
-          onPress={() => {
-            // Logic for logout
-            console.log('Logging out...');
-          }}
+          onPress={handleLogout}
         >
-          <Text style={styles.logoutButtonText}>Log Out</Text>
+          <Text style={styles.logoutButtonText}>Déconnexion</Text>
         </TouchableOpacity>
 
         {/* Espace en bas pour le scrolling */}
@@ -169,6 +231,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
   },
   scrollView: {
     flex: 1,
@@ -201,6 +271,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   profileAvatar: {
     width: 70,
@@ -210,6 +281,7 @@ const styles = StyleSheet.create({
   },
   profileDetails: {
     justifyContent: 'center',
+    flex: 1,
   },
   profileName: {
     fontSize: 20,
@@ -217,7 +289,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   profileEmail: {
-    fontSize: 16,
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  profilePhone: {
+    fontSize: 14,
   },
   editButton: {
     backgroundColor: '#1E40AF',

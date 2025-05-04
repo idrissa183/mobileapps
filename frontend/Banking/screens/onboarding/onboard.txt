@@ -1,31 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  Dimensions,
+import { 
+  View, 
+  Text, 
+  ScrollView, 
+  SafeAreaView, 
+  StyleSheet, 
+  Image, 
+  TouchableOpacity, 
+  Dimensions, 
   ActivityIndicator,
   Modal,
-  TextInput
+  TextInput,
+  Alert
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
 import transactionService, { TransactionType, Currency, TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';
-import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
 const CardsScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  const navigation = useNavigation();
-
 
   // Apply styles based on theme
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
@@ -42,14 +40,14 @@ const CardsScreen: React.FC = () => {
   const [isCvvVisible, setIsCvvVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cardsLoading, setCardsLoading] = useState(true);
-
+  
   // New Card Modal states
   const [isNewCardModalVisible, setIsNewCardModalVisible] = useState(false);
   const [newCardName, setNewCardName] = useState('');
   const [isContactless, setIsContactless] = useState(true);
   const [isVirtual, setIsVirtual] = useState(false);
   const [cardType, setCardType] = useState<CardType>(CardType.DEBIT);
-
+  
   // Transaction Modals states
   const [isTopUpModalVisible, setIsTopUpModalVisible] = useState(false);
   const [isWithdrawModalVisible, setIsWithdrawModalVisible] = useState(false);
@@ -57,10 +55,10 @@ const CardsScreen: React.FC = () => {
   const [transactionAmount, setTransactionAmount] = useState('');
   const [transactionDescription, setTransactionDescription] = useState('');
   const [recipientAccountNumber, setRecipientAccountNumber] = useState('');
-  const [contacts, setContacts] = useState<{ name: string, account_number: string }[]>([
-    { name: 'John Doe', account_number: '1234567890' },
-    { name: 'Jane Smith', account_number: '0987654321' },
-    { name: 'Mike Johnson', account_number: '1122334455' },
+  const [contacts, setContacts] = useState<{name: string, account_number: string}[]>([
+    {name: 'John Doe', account_number: '1234567890'},
+    {name: 'Jane Smith', account_number: '0987654321'},
+    {name: 'Mike Johnson', account_number: '1122334455'},
   ]);
 
   // Fetch cards on load
@@ -74,14 +72,18 @@ const CardsScreen: React.FC = () => {
     try {
       const fetchedCards = await cardService.getAllCards();
       setCards(fetchedCards);
-
+      
       // Select first card by default if one exists
       if (fetchedCards.length > 0 && !selectedCard) {
         setSelectedCard(fetchedCards[0]);
       }
     } catch (error) {
       console.error('Error fetching cards:', error);
-      // You could add an error notification here
+      Alert.alert(
+        t('common.error'),
+        t('cards.fetchError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setCardsLoading(false);
     }
@@ -106,17 +108,26 @@ const CardsScreen: React.FC = () => {
         is_contactless: isContactless,
         is_virtual: isVirtual
       };
-
+      
       const newCard = await cardService.createCard(newCardData);
-
+      
       // Add new card and select it
       setCards(prevCards => [...prevCards, newCard]);
       setSelectedCard(newCard);
       setIsNewCardModalVisible(false);
-
+      Alert.alert(
+        t('common.success'),
+        t('cards.createSuccess'),
+        [{ text: t('common.ok') }]
+      );
+      
     } catch (error) {
       console.error('Error creating new card:', error);
-      // You could add an error notification here
+      Alert.alert(
+        t('common.error'),
+        t('cards.createError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -132,7 +143,11 @@ const CardsScreen: React.FC = () => {
   // Handle Top Up (Deposit)
   const handleTopUp = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
+      Alert.alert(
+        t('common.error'),
+        t('transactions.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -142,15 +157,23 @@ const CardsScreen: React.FC = () => {
         amount: parseFloat(transactionAmount),
         description: transactionDescription || t('transactions.depositDefault')
       };
-
+      
       await transactionService.depositMoney(depositData);
       setIsTopUpModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
-
+      Alert.alert(
+        t('common.success'),
+        t('transactions.depositSuccess'),
+        [{ text: t('common.ok') }]
+      );
+      
     } catch (error) {
       console.error('Error depositing money:', error);
-      // You could add an error notification here
+      Alert.alert(
+        t('common.error'),
+        t('transactions.depositError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -159,7 +182,11 @@ const CardsScreen: React.FC = () => {
   // Handle Withdraw
   const handleWithdraw = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
+      Alert.alert(
+        t('common.error'),
+        t('transactions.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -169,15 +196,23 @@ const CardsScreen: React.FC = () => {
         amount: parseFloat(transactionAmount),
         description: transactionDescription || t('transactions.withdrawalDefault')
       };
-
+      
       await transactionService.withdrawMoney(withdrawalData);
       setIsWithdrawModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
-
+      Alert.alert(
+        t('common.success'),
+        t('transactions.withdrawalSuccess'),
+        [{ text: t('common.ok') }]
+      );
+      
     } catch (error) {
       console.error('Error withdrawing money:', error);
-      // You could add an error notification here
+      Alert.alert(
+        t('common.error'),
+        t('transactions.withdrawalError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -185,8 +220,21 @@ const CardsScreen: React.FC = () => {
 
   // Handle Transfer
   const handleTransfer = async () => {
-    if (!recipientAccountNumber || !transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
+    if (!recipientAccountNumber) {
+      Alert.alert(
+        t('common.error'),
+        t('transactions.recipientRequired'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+    
+    if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
+      Alert.alert(
+        t('common.error'),
+        t('transactions.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -197,15 +245,23 @@ const CardsScreen: React.FC = () => {
         amount: parseFloat(transactionAmount),
         description: transactionDescription || t('transactions.transferDefault')
       };
-
+      
       await transactionService.transferMoney(transferData);
       setIsTransferModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
-
+      Alert.alert(
+        t('common.success'),
+        t('transactions.transferSuccess'),
+        [{ text: t('common.ok') }]
+      );
+      
     } catch (error) {
       console.error('Error transferring money:', error);
-      // You could add an error notification here
+      Alert.alert(
+        t('common.error'),
+        t('transactions.transferError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -231,7 +287,7 @@ const CardsScreen: React.FC = () => {
       const lastFour = cardNumber.slice(-4);
       return `**** **** **** ${lastFour}`;
     }
-
+    
     // Otherwise return formatted card
     return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
   };
@@ -241,7 +297,7 @@ const CardsScreen: React.FC = () => {
 
   // Create Card Button Component - Always shown regardless of cards existence
   const CreateCardButton = () => (
-    <TouchableOpacity
+    <TouchableOpacity 
       style={styles.createCardButton}
       onPress={openNewCardModal}
     >
@@ -254,20 +310,13 @@ const CardsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, headerTextStyle]}>{t('title', 'cards')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
       {/* Balance Section */}
       <View style={[styles.balanceContainer, balanceContainerStyle]}>
         <View>
           <Text style={[styles.currencyLabel, secondaryTextStyle]}>{t('currency.usd')}</Text>
           <Text style={[styles.balanceAmount, headerTextStyle]}>{formatNumberWithCommas(balance.toFixed(2))}</Text>
         </View>
-        <TouchableOpacity
+        <TouchableOpacity 
           style={styles.topUpButton}
           onPress={() => setIsTopUpModalVisible(true)}
         >
@@ -282,30 +331,30 @@ const CardsScreen: React.FC = () => {
           <ActivityIndicator size="small" color="#2563EB" />
         </View>
       ) : (
-        <ScrollView
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
+        <ScrollView 
+          horizontal={true} 
+          showsHorizontalScrollIndicator={false} 
           style={styles.cardsContainer}
           contentContainerStyle={{ paddingRight: 20 }}
         >
           {cards.map((card, index) => (
-            <TouchableOpacity
-              key={card.id}
-              onPress={() => handleCardClick(card)}
+            <TouchableOpacity 
+              key={card.id} 
+              onPress={() => handleCardClick(card)} 
               activeOpacity={0.8}
             >
               <View style={[styles.cardWrapper,
-              (index % 2 === 0 ? { borderColor: "#2563EB" } : { borderColor: "#80b2e6" }),
-              (selectedCard?.id === card.id ? { borderWidth: 2 } : {})]}
+                (index % 2 === 0 ? {borderColor: "#2563EB"} : {borderColor: "#80b2e6"}),
+                (selectedCard?.id === card.id ? {borderWidth: 2} : {})]}
               >
                 <View style={[styles.card, (index % 2 === 0 ? styles.blueCard : styles.cyanCard)]}>
                   <View style={styles.cardHeader}>
-                    <Image
-                      source={require('../../assets/avatars/avatar2.jpg')}
+                    <Image 
+                      source={require('../../assets/avatars/avatar2.jpg')} 
                       style={styles.cardLogo}
                     />
                   </View>
-
+                  
                   <View style={styles.cardNumberContainer}>
                     <Text style={styles.cardNumberText}>****</Text>
                     <Text style={styles.cardNumberText}>****</Text>
@@ -314,17 +363,17 @@ const CardsScreen: React.FC = () => {
                       {card.card_number.slice(-4)}
                     </Text>
                   </View>
-
+                  
                   <View style={styles.cardChipSection}>
                     <View style={styles.cardBrand}>
                       <Text style={styles.cardBrandText}>BCD</Text>
                     </View>
-                    <Image
-                      source={require('../../assets/puce.png')}
+                    <Image 
+                      source={require('../../assets/puce.png')} 
                       style={styles.cardPuce}
                     />
                   </View>
-
+                  
                   <View style={styles.cardFooter}>
                     <Text style={styles.cardDate}>{t('cards.expiresAt')}: {card.expiry_date}</Text>
                     <Text style={styles.cardStatusBadge}>
@@ -335,44 +384,42 @@ const CardsScreen: React.FC = () => {
               </View>
             </TouchableOpacity>
           ))}
-
+          
+          {/* Add Card Button */}
           <CreateCardButton />
         </ScrollView>
       )}
 
       {/* Card Details Section */}
       {selectedCard && (
-        <ScrollView
-          style={[styles.cardDetailsSection, cardDetailBgStyle]}
-        >
-          <View>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, headerTextStyle]}>{t('cards.cardDetail')}</Text>
+        <View style={[styles.cardDetailsSection, cardDetailBgStyle]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, headerTextStyle]}>{t('cards.cardDetail')}</Text>
+            {/* Removed the "New Card" button as requested */}
+          </View>
 
+          {/* Card Info Items */}
+          <View style={styles.cardInfoContainer}>
+            <View style={styles.cardInfoItem}>
+              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardNumber')}:</Text>
+              <Text style={[styles.cardInfoValueText, headerTextStyle]}>
+                {formatCardNumber(selectedCard.card_number)}
+              </Text>
             </View>
 
-            {/* Card Info Items */}
-            <View style={styles.cardInfoContainer}>
-              <View style={styles.cardInfoItem}>
-                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardNumber')}:</Text>
-                <Text style={[styles.cardInfoValueText, headerTextStyle]}>
-                  {formatCardNumber(selectedCard.card_number)}
-                </Text>
-              </View>
+            <View style={styles.cardInfoItem}>
+              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.expiryDate')}:</Text>
+              <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.expiry_date}</Text>
+            </View>
 
-              <View style={styles.cardInfoItem}>
-                <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.expiryDate')}:</Text>
-                <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.expiry_date}</Text>
-              </View>
-
-              {/* <View style={styles.cardInfoItem}>
+            <View style={styles.cardInfoItem}>
               <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardType')}:</Text>
               <Text style={[styles.cardInfoValueText, headerTextStyle]}>
                 {selectedCard.card_type === CardType.DEBIT ? t('cards.debitCard') : t('cards.virtualCard')}
               </Text>
-            </View> */}
+            </View>
 
-              {/* <View style={styles.cardInfoItem}>
+            <View style={styles.cardInfoItem}>
               <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.status')}:</Text>
               <View style={styles.statusContainer}>
                 <View style={[
@@ -383,36 +430,35 @@ const CardsScreen: React.FC = () => {
                   {selectedCard.status === CardStatus.ACTIVE ? t('cards.active') : t('cards.inactive')}
                 </Text>
               </View>
-            </View> */}
+            </View>
 
-              {/* <View style={styles.cardInfoItem}>
+            <View style={styles.cardInfoItem}>
               <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.contactless')}:</Text>
               <Text style={[styles.cardInfoValueText, headerTextStyle]}>
                 {selectedCard.is_contactless ? t('common.yes') : t('common.no')}
               </Text>
-            </View> */}
-            </View>
-
-            {/* Action Buttons */}
-            <View style={styles.cardActionsContainer}>
-              <TouchableOpacity
-                style={styles.withdrawButton}
-                onPress={() => setIsWithdrawModalVisible(true)}
-              >
-                <Ionicons name="arrow-down-outline" size={18} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>{t('cards.withdraw')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.transferButton}
-                onPress={() => setIsTransferModalVisible(true)}
-              >
-                <Ionicons name="swap-horizontal-outline" size={18} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>{t('cards.transfer')}</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
+
+          {/* Action Buttons */}
+          <View style={styles.cardActionsContainer}>
+            <TouchableOpacity 
+              style={styles.withdrawButton}
+              onPress={() => setIsWithdrawModalVisible(true)}
+            >
+              <Ionicons name="arrow-down-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>{t('cards.withdraw')}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.transferButton}
+              onPress={() => setIsTransferModalVisible(true)}
+            >
+              <Ionicons name="swap-horizontal-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>{t('cards.transfer')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
 
       {/* Create New Card Modal */}
@@ -448,15 +494,15 @@ const CardsScreen: React.FC = () => {
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('cards.cardType')}</Text>
                 <View style={styles.radioGroup}>
-                  <TouchableOpacity
+                  <TouchableOpacity 
                     style={[styles.radioButton, cardType === CardType.DEBIT && styles.radioButtonActive]}
                     onPress={() => setCardType(CardType.DEBIT)}
                   >
                     <View style={[styles.radioInner, cardType === CardType.DEBIT && styles.radioInnerActive]} />
                     <Text style={[styles.radioText, headerTextStyle]}>{t('cards.debitCard')}</Text>
                   </TouchableOpacity>
-
-                  <TouchableOpacity
+                  
+                  <TouchableOpacity 
                     style={[styles.radioButton, cardType === CardType.VIRTUAL && styles.radioButtonActive]}
                     onPress={() => setCardType(CardType.VIRTUAL)}
                   >
@@ -469,8 +515,8 @@ const CardsScreen: React.FC = () => {
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('cards.options')}</Text>
                 <View style={styles.checkboxGroup}>
-                  <TouchableOpacity
-                    style={styles.checkbox}
+                  <TouchableOpacity 
+                    style={styles.checkbox} 
                     onPress={() => setIsContactless(!isContactless)}
                   >
                     <View style={[styles.checkboxInner, isContactless && styles.checkboxActive]}>
@@ -478,9 +524,9 @@ const CardsScreen: React.FC = () => {
                     </View>
                     <Text style={[styles.checkboxText, headerTextStyle]}>{t('cards.contactless')}</Text>
                   </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.checkbox}
+                  
+                  <TouchableOpacity 
+                    style={styles.checkbox} 
                     onPress={() => setIsVirtual(!isVirtual)}
                   >
                     <View style={[styles.checkboxInner, isVirtual && styles.checkboxActive]}>
@@ -493,15 +539,15 @@ const CardsScreen: React.FC = () => {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
+              <TouchableOpacity 
+                style={styles.cancelButton} 
                 onPress={() => setIsNewCardModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.createButton}
+              
+              <TouchableOpacity 
+                style={styles.createButton} 
                 onPress={createNewCard}
                 disabled={loading}
               >
@@ -560,15 +606,15 @@ const CardsScreen: React.FC = () => {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
+              <TouchableOpacity 
+                style={styles.cancelButton} 
                 onPress={() => setIsTopUpModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.createButton}
+              
+              <TouchableOpacity 
+                style={styles.createButton} 
                 onPress={handleTopUp}
                 disabled={loading}
               >
@@ -627,15 +673,15 @@ const CardsScreen: React.FC = () => {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
+              <TouchableOpacity 
+                style={styles.cancelButton} 
                 onPress={() => setIsWithdrawModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.createButton}
+              
+              <TouchableOpacity 
+                style={styles.createButton} 
                 onPress={handleWithdraw}
                 disabled={loading}
               >
@@ -674,7 +720,7 @@ const CardsScreen: React.FC = () => {
                 <View style={[styles.dropdown, inputStyle]}>
                   <ScrollView style={styles.dropdownList}>
                     {contacts.map((contact, index) => (
-                      <TouchableOpacity
+                      <TouchableOpacity 
                         key={index}
                         style={[
                           styles.dropdownItem,
@@ -720,15 +766,15 @@ const CardsScreen: React.FC = () => {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
+              <TouchableOpacity 
+                style={styles.cancelButton} 
                 onPress={() => setIsTransferModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.createButton}
+              
+              <TouchableOpacity 
+                style={styles.createButton} 
                 onPress={handleTransfer}
                 disabled={loading}
               >
@@ -749,192 +795,214 @@ const CardsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 30
+    padding: 16,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 16,
+  darkContainer: {
+    backgroundColor: "#111827",
   },
-  backButton: {
-    padding: 8,
+  lightContainer: {
+    backgroundColor: "#F9FAFB",
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  loadingCardContainer: {
-    height: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  
+  // Balance Section
   balanceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginHorizontal: 20,
-    marginVertical: 20,
-    padding: 20,
-    borderRadius: 16,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  darkBalanceContainer: {
+    backgroundColor: "#1F2937",
+  },
+  lightBalanceContainer: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   currencyLabel: {
     fontSize: 14,
     marginBottom: 4,
   },
   balanceAmount: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  darkHeaderText: {
+    color: "#FFFFFF",
+  },
+  lightHeaderText: {
+    color: "#111827",
+  },
+  darkSecondaryText: {
+    color: "#9CA3AF",
+  },
+  lightSecondaryText: {
+    color: "#6B7280",
   },
   topUpButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#EFF6FF",
   },
   topUpText: {
     marginLeft: 4,
-    fontSize: 14,
     fontWeight: '500',
+    color: "#111827",
   },
   darkTopUpText: {
-    color: '#FFFFFF',
+    color: "#F9FAFB",
   },
+  
+  // Cards Section
   cardsContainer: {
-    marginLeft: 20,
-    marginBottom: 20,
+    marginBottom: 10, // Reduce vertical spacing between cards and details section
+  },
+  loadingCardContainer: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardWrapper: {
-    marginRight: 15,
+    marginLeft: 16,
+    marginRight: 4,
     borderRadius: 16,
     borderWidth: 0,
-    padding: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingBottom: 4,
   },
   card: {
-    width: width * 0.75,
+    width: width * 0.65,
     height: 200,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
-    justifyContent: 'space-between',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-
   blueCard: {
-    backgroundColor: '#2563EB',
+    backgroundColor: "#2563EB",
   },
   cyanCard: {
-    backgroundColor: '#0891B2',
+    backgroundColor: "#06B6D4",
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   cardLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   cardNumberContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 10,
+    marginTop: 16,
   },
   cardNumberText: {
-    color: 'white',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
+    letterSpacing: 1,
   },
   cardChipSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  cardBrand: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  cardBrandText: {
-    color: 'white',
-    fontWeight: 'bold',
+    marginTop: 16,
   },
   cardPuce: {
     width: 40,
     height: 30,
     resizeMode: 'contain',
   },
+  cardBrand: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  cardBrandText: {
+    color: "#FFFFFF",
+    fontWeight: '600',
+  },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 'auto', 
     alignItems: 'center',
   },
   cardDate: {
-    color: 'white',
-    fontSize: 12,
+    color: "#FFFFFF",
+    fontSize: 14,
   },
   cardStatusBadge: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    color: "#FFFFFF",
     paddingHorizontal: 8,
-    borderRadius: 10,
+    paddingVertical: 2,
+    borderRadius: 12,
+    fontSize: 12,
+    fontWeight: '500',
   },
   createCardButton: {
-    width: width * 0.4,
+    width: width * 0.3,
     height: 200,
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    backgroundColor: "#F9FAFB",
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2563EB',
+    marginLeft: 16,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
     borderStyle: 'dashed',
   },
   createCardContent: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   createCardText: {
-    marginTop: 12,
-    color: '#2563EB',
-    fontSize: 14,
+    marginTop: 8,
+    color: "#2563EB",
     fontWeight: '500',
   },
+  
+  // Card Details Section
   cardDetailsSection: {
+    flex: 1, // Allow section to expand to fill remaining space
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
-    marginTop: 4,
+    padding: 16,
+    marginTop: 8, // Reduce vertical spacing between cards and details section
+  },
+  darkCardDetailBg: {
+    backgroundColor: "#1F2937",
+  },
+  lightCardDetailBg: {
+    backgroundColor: "#FFFFFF",
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-  },
-  viewAllText: {
-    color: '#2563EB',
-    fontSize: 14,
+    fontWeight: '600',
   },
   cardInfoContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   cardInfoItem: {
     flexDirection: 'row',
@@ -942,7 +1010,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(209, 213, 219, 0.3)',
+    borderBottomColor: "#E5E7EB",
   },
   cardInfoLabel: {
     fontSize: 14,
@@ -959,238 +1027,222 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 6,
+    marginRight: 8,
   },
   activeIndicator: {
-    backgroundColor: '#10B981',
+    backgroundColor: "#10B981",
   },
   inactiveIndicator: {
-    backgroundColor: '#EF4444',
+    backgroundColor: "#EF4444",
   },
   cardActionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 16,
   },
   withdrawButton: {
     flex: 1,
-    backgroundColor: '#EF4444',
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: "#EF4444",
     paddingVertical: 12,
     borderRadius: 8,
     marginRight: 8,
   },
   transferButton: {
     flex: 1,
-    backgroundColor: '#2563EB',
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: "#2563EB",
     paddingVertical: 12,
     borderRadius: 8,
     marginLeft: 8,
   },
   actionButtonText: {
-    color: 'white',
-    marginLeft: 6,
+    color: "#FFFFFF",
     fontWeight: '500',
+    marginLeft: 8,
   },
+  
+  // Modals
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
+    padding: 16,
+    height: '60%',
+  },
+  darkModalContainer: {
+    backgroundColor: "#1F2937",
+  },
+  lightModalContainer: {
+    backgroundColor: "#FFFFFF",
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   modalContent: {
-    marginBottom: 20,
+    flex: 1,
   },
   inputGroup: {
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 14,
     marginBottom: 8,
+    fontSize: 14,
   },
   input: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
     borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
   },
-  radioGroup: {
-    flexDirection: 'row',
+  darkInput: {
+    backgroundColor: "#374151",
+    borderColor: "#4B5563",
+    color: "#FFFFFF",
   },
-  radioButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  radioButtonActive: {
-    opacity: 1,
-  },
-  radioInner: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#2563EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  radioInnerActive: {
-    backgroundColor: '#2563EB',
-    borderWidth: 5,
-  },
-  radioText: {
-    fontSize: 14,
-  },
-  checkboxGroup: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  checkbox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-    marginBottom: 10,
-  },
-  checkboxInner: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#2563EB',
-    borderRadius: 4,
-    marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: {
-    backgroundColor: '#2563EB',
-  },
-  checkboxText: {
-    fontSize: 14,
+  lightInput: {
+    backgroundColor: "#F9FAFB",
+    borderColor: "#E5E7EB",
+    color: "#111827",
   },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 16,
   },
   cancelButton: {
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
     flex: 1,
-    marginRight: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    marginRight: 8,
   },
   cancelButtonText: {
-    color: '#6B7280',
+    color: "#6B7280",
     fontWeight: '500',
   },
   createButton: {
-    backgroundColor: '#2563EB',
-    padding: 12,
-    borderRadius: 8,
     flex: 1,
-    marginLeft: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    backgroundColor: "#2563EB",
+    borderRadius: 8,
+    marginLeft: 8,
   },
   createButtonText: {
-    color: 'white',
+    color: "#FFFFFF",
     fontWeight: '500',
   },
-  dropdown: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  
+  // Radio buttons
+  radioGroup: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+    padding: 8,
     borderRadius: 8,
     borderWidth: 1,
-    height: 120,
+    borderColor: "#D1D5DB",
+  },
+  radioButtonActive: {
+    borderColor: "#2563EB",
+  },
+  radioInner: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: "#D1D5DB",
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInnerActive: {
+    borderColor: "#2563EB",
+    backgroundColor: "#2563EB",
+  },
+  radioText: {
+    fontSize: 14,
+  },
+  
+  // Checkboxes
+  checkboxGroup: {
+    marginTop: 8,
+  },
+  checkbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  checkboxInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: "#D1D5DB",
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  checkboxActive: {
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
+  },
+  checkboxText: {
+    fontSize: 14,
+  },
+  
+  // Dropdown
+  dropdown: {
+    borderWidth: 1,
+    borderRadius: 8,
+    maxHeight: 120,
   },
   dropdownList: {
-    flex: 1,
+    maxHeight: 120,
   },
   dropdownItem: {
-    paddingVertical: 10,
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(209, 213, 219, 0.3)',
+    borderBottomColor: "#E5E7EB",
   },
   selectedDropdownItem: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    backgroundColor: "#EFF6FF",
   },
   dropdownText: {
     fontSize: 14,
+    color: "#111827",
   },
   darkDropdownText: {
-    color: '#E5E7EB',
+    color: "#F9FAFB",
   },
   selectedDropdownText: {
-    color: '#2563EB',
     fontWeight: '500',
-  },
-
-  // Theme-specific styles
-  lightContainer: {
-    backgroundColor: '#F9FAFB',
-  },
-  darkContainer: {
-    backgroundColor: '#111827',
-  },
-  lightHeaderText: {
-    color: '#111827',
-  },
-  darkHeaderText: {
-    color: '#F9FAFB',
-  },
-  lightSecondaryText: {
-    color: '#6B7280',
-  },
-  darkSecondaryText: {
-    color: '#9CA3AF',
-  },
-  lightCardDetailBg: {
-    backgroundColor: '#FFFFFF',
-  },
-  darkCardDetailBg: {
-    backgroundColor: '#1F2937',
-  },
-  lightBalanceContainer: {
-    backgroundColor: '#FFFFFF',
-  },
-  darkBalanceContainer: {
-    backgroundColor: '#1F2937',
-  },
-  lightInput: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#D1D5DB',
-    color: '#111827',
-  },
-  darkInput: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB',
-  },
-  lightModalContainer: {
-    backgroundColor: '#FFFFFF',
-  },
-  darkModalContainer: {
-    backgroundColor: '#1F2937',
+    color: "#2563EB",
   },
 });
 

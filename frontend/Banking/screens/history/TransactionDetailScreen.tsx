@@ -192,28 +192,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 </Text>
               </View>
             )}
-
-            {/* {transaction.description && (
-              <View style={[styles.detailRow, transaction.notes ? borderStyle : null]}>
-                <Text style={[styles.detailLabel, secondaryTextStyle]}>
-                  {t('description', 'transactions')}
-                </Text>
-                <Text style={[styles.detailValue, headerTextStyle]}>
-                  {transaction.description}
-                </Text>
-              </View>
-            )}
-
-            {transaction.notes && (
-              <View style={styles.detailRow}>
-                <Text style={[styles.detailLabel, secondaryTextStyle]}>
-                  {t('notes', 'transactions')}
-                </Text>
-                <Text style={[styles.detailValue, headerTextStyle]}>
-                  {transaction.notes}
-                </Text>
-              </View>
-            )} */}
           </View>
 
           {/* Actions possibles */}
@@ -222,7 +200,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               <TouchableOpacity 
                 style={styles.actionButton}
                 onPress={() => {
-                  // Action à implementer: télécharger le reçu
                 }}
               >
                 <Ionicons name="download-outline" size={24} color={isDarkMode ? "#60A5FA" : "#3B82F6"} />
@@ -233,7 +210,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 <TouchableOpacity 
                   style={styles.actionButton}
                   onPress={() => {
-                    // Action à implementer: partager les détails
                   }}
                 >
                   <Ionicons name="share-social-outline" size={24} color={isDarkMode ? "#60A5FA" : "#3B82F6"} />
