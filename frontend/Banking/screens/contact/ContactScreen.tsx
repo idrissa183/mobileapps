@@ -69,7 +69,7 @@ const ContactScreen: React.FC = () => {
   const handleContactPress = async (contact: Contact) => {
     try {
       setLoading(true);
-      const contactDetails = await contactService.getContactById(contact.id);
+      const contactDetails = await contactService.getContactById(contact.user_id);
       setSelectedContact(contactDetails);
     } catch (err) {
       console.error('Failed to fetch contact details:', err);
@@ -79,17 +79,17 @@ const ContactScreen: React.FC = () => {
     }
   };
 
-  const handleSendMoney = (contact: Contact) => {
-    navigation.navigate('TransferScreen', { contact });
-  };
+  // const handleSendMoney = (contact: Contact) => {
+  //   navigation.navigate('TransferScreen', { contact });
+  // };
 
-  const handleRequestMoney = (contact: Contact) => {
-    navigation.navigate('RequestScreen', { contact });
-  };
+  // const handleRequestMoney = (contact: Contact) => {
+  //   navigation.navigate('RequestScreen', { contact });
+  // };
 
-  const handleAddContact = () => {
-    navigation.navigate('AddContactScreen');
-  };
+  // const handleAddContact = () => {
+  //   navigation.navigate('AddContactScreen');
+  // };
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const cardStyle = isDarkMode ? styles.darkCard : styles.lightCard;
@@ -155,6 +155,13 @@ const ContactScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
+      <View style={styles.header}>
+              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
+              </TouchableOpacity>
+              <Text style={[styles.headerTitle, headerTextStyle]}>{t('title', 'contacts')}</Text>
+              <View style={{ width: 24 }} />
+            </View>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -168,12 +175,12 @@ const ContactScreen: React.FC = () => {
         }
       >
         {/* Header avec le titre et le bouton d'ajout de contact */}
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <Text style={[styles.headerTitle, headerTextStyle]}>{t('contacts.title')}</Text>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddContact}>
+          <TouchableOpacity style={styles.addButton} onPress={() => {}}>
             <Ionicons name="person-add-outline" size={24} color={isDarkMode ? '#818CF8' : '#4F46E5'} />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, inputContainerStyle]}>
@@ -254,16 +261,9 @@ const ContactScreen: React.FC = () => {
             <View style={styles.detailsActions}>
               <TouchableOpacity
                 style={styles.actionBtnPrimary}
-                onPress={() => handleSendMoney(selectedContact)}
+                onPress={() => {}}
               >
                 <Text style={styles.actionBtnPrimaryText}>{t('contacts.sendMoney')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionBtnSecondary}
-                onPress={() => handleRequestMoney(selectedContact)}
-              >
-                <Text style={[styles.actionBtnSecondaryText, headerTextStyle]}>{t('contacts.request')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -381,6 +381,9 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     padding: 4,
+  },
+  backButton: {
+    padding: 8,
   },
   sectionContainer: {
     paddingHorizontal: 20,

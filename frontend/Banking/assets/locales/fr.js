@@ -72,7 +72,6 @@ export default {
     otpVerificationFailed: "La vérification a échoué. Veuillez réessayer.",
     didntReceiveCode: "Vous n'avez pas reçu de code ?",
     resendCodeIn: "Renvoyer le code dans",
-    resendCode: "Renvoyer le code",
     verifyAndContinue: "Vérifier et continuer",
     otpResent: "Un nouveau code de vérification a été envoyé",
     otpResendFailed: "Échec de l'envoi du code de vérification",
@@ -84,7 +83,7 @@ export default {
     success: "Succès",
     loginFailed: "Échec de la connexion",
     incorrectCredentials: "Email ou mot de passe incorrect.",
-    accountInactive: "Votre compte est inactif. Veuillez contacter le support.",
+    accountInactive: "Votre compte est inactif. Veuillez contacter le support."
   },
   common: {
     loading: 'Chargement...',
@@ -106,9 +105,12 @@ export default {
     yesterday: 'Hier',
     unknown: 'Inconnu',
     viewAll: 'Voir tout',
-    loading: "Chargement...",
     yes: "Oui",
     no: "Non",
+    ok: "OK",
+    create: "Créer",
+    confirm: "Confirmer"
+
   },
   home: {
     title: 'Accueil',
@@ -126,9 +128,10 @@ export default {
     transactions: 'Transactions',
     inviteYour: 'Invitez vos',
     friendNow: 'amis maintenant !',
-    earn100: 'Gagnez 100$',
+    earn100: 'Gagnez 100$'
   },
   cards: {
+    title: "Cartes",
     topUp: "Recharger",
     cardDetail: "Détails de la carte",
     newCard: "Nouvelle carte",
@@ -144,35 +147,14 @@ export default {
     debitCard: "Carte de débit",
     virtualCard: "Carte virtuelle",
     expiresAt: "Expire le",
-    defaultNewCardName: "Ma Carte"
+    defaultNewCardName: "Ma Carte",
+    cardName: "Nom de la carte",
+    options: "Options",
+    virtual: "Virtuelle",
+    createNewCard: "Créer une nouvelle carte",
+    createCard: "Créer une Carte",
+    cardBalance: "Solde de la Carte"
   },
-  // transactions: {
-  //   title: 'Transactions',
-  //   all: 'Toutes',
-  //   income: 'Revenus',
-  //   expense: 'Dépenses',
-  //   pending: 'En Attente',
-  //   completed: 'Terminées',
-  //   failed: 'Échouées',
-  //   noTransactions: 'Aucune transaction pour le moment',
-  //   details: 'Détails de Transaction',
-  //   date: 'Date',
-  //   time: 'Heure',
-  //   category: 'Catégorie',
-  //   description: 'Description',
-  //   amount: 'Montant',
-  //   status: 'Statut',
-  //   reference: 'Référence',
-  //   type: {
-  //     deposit: 'Dépôt',
-  //     withdrawal: 'Retrait',
-  //     transfer: 'Virement',
-  //     payment: 'Paiement',
-  //     fee: 'Frais',
-  //     interest: 'Intérêt',
-  //     refund: 'Remboursement'
-  //   }
-  // },
   transfer: {
     title: 'Virement',
     fromAccount: 'Compte Source',
@@ -266,13 +248,12 @@ export default {
     notificationsEnabledMessage: "Les notifications sont maintenant activées",
     notificationsDisabledMessage: "Les notifications sont maintenant désactivées",
     notificationsUpdated: "Notifications mises à jour",
-    error: "Erreur",
     cannotOpenURL: "Impossible d'ouvrir cette adresse",
     locationServicesEnabled: "La localisation est activée",
     locationServicesDisabled: "La localisation est désactivée",
-    ok: "OK"
+    linkError: "Erreur d'ouverture de lien",
+    cannotOpenLink: "Impossible d'ouvrir ce lien"
   },
-
   transactions: {
     title: 'Transactions',
     all: 'Toutes',
@@ -287,44 +268,31 @@ export default {
     noTransactions: 'Aucune transaction pour le moment',
     noRecentTransactions: 'Aucune transaction récente',
     loadingTransactions: 'Chargement des transactions...',
-    today: 'Aujourd\'hui',
-    yesterday: 'Hier',
-    unknown: 'Inconnu',
     transferTo: 'Virement',
     transferFrom: 'Virement',
-    viewAll: 'Voir tout',
     noMoreTransactions: 'Plus de transactions',
-    details: 'Details',
-    date: 'Date',
     transactionDetail: 'Détail de la transaction',
+    details: 'Détails',
     transactionType: 'Type de transaction',
+    date: 'Date',
     transactionId: 'ID de transaction',
     recipient: 'Bénéficiaire',
     sender: 'Expéditeur',
     downloadReceipt: 'Télécharger le reçu',
     shareDetails: 'Partager les détails',
-    cancelTransaction: 'Annuler la transaction'
-
+    cancelTransaction: 'Annuler la transaction',
+    amount: "Montant",
+    description: "Description",
+    topUp: "Recharger",
+    withdraw: "Retrait",
+    depositDefault: "Dépôt sur mon compte",
+    withdrawalDefault: "Retrait de mon compte",
+    transferDefault: "Virement vers un autre compte"
   },
-  // common: {
-  //   today: 'Aujourd\'hui',
-  //   yesterday: 'Hier',
-  //   unknown: 'Inconnu',
-  //   viewAll: 'Voir tout',
-  //   loading: "Chargement...",
-  //   yes: "Oui",
-  //   no: "Non",
-  // },
-  // home: {
-  //   transactions: 'Transactions',
-  //   inviteYour: 'Invitez vos',
-  //   friendNow: 'amis maintenant !',
-  //   earn100: 'Gagnez 100$',
-  // },
   history: {
-    transactionHistory: 'Historique des transactions',
+    transactionHistory: 'Historique',
     searchTransactions: 'Rechercher des transactions',
-    noMoreTransactions: 'Plus de transactions',
+    noMoreTransactions: 'Plus de transactions'
   },
   currency: {
     usd: "Dollar américain"

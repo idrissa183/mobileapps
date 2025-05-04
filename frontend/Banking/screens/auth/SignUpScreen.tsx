@@ -407,7 +407,7 @@ const SignUpScreen = () => {
       </Modal>
 
       {/* Loading overlay */}
-      {isLoading && <Loader fullScreen />}
+      {isLoading}
     </SafeAreaWrapper>
   );
 };

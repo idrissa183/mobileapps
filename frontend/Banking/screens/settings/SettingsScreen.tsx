@@ -21,6 +21,7 @@ import { Linking } from 'react-native';
 import useAuth from "../../hooks/useAuth";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../App';
+import { CommonActions } from '@react-navigation/native';
 
 // Define available languages with proper typing
 interface Language {
@@ -133,7 +134,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     setLangModalVisible(true);
   };
 
-  const changeLanguage = (langCode: string): void => {
+  const changeLanguage = (langCode: any): void => {
     setLanguage(langCode);
     setLangModalVisible(false);
   };
@@ -184,10 +185,12 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await logout();
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'SignIn' }],
+        })
+      );
     } catch (error: any) {
       if (error.response) {
         Alert.alert(
@@ -390,12 +393,19 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={[styles.container, containerStyle]}>
       {/* Header with back button and title */}
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
+        <View style={{ width: 24 }} />
+      </View>
+      {/* <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#6366F1' : '#4F46E5'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
         <View style={styles.headerRight} />
-      </View>
+      </View> */}
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Account Section */}
