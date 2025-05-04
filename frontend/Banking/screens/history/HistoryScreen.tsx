@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  FlatList,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -291,9 +290,6 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         {isLoading && !transactions ? (
           <View style={styles.loaderContainer}>
             <Loader />
-            {/* <Text style={[styles.loadingText, secondaryTextStyle]}>
-              {t('loadingTransactions', 'transactions')}
-            </Text> */}
           </View>
         ) : filteredTransactions && filteredTransactions.length > 0 ? (
           <ScrollView

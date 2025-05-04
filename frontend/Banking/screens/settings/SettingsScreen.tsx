@@ -23,14 +23,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../App';
 import { CommonActions } from '@react-navigation/native';
 
-// Define available languages with proper typing
 interface Language {
   id: string;
   name: string;
   flag: any;
 }
 
-// Define available languages
 const languages: Language[] = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
   { id: 'fr', name: 'Français', flag: require('../../assets/flags/france.png') },
@@ -38,7 +36,6 @@ const languages: Language[] = [
 
 type Props = NativeStackScreenProps<MainTabParamList, 'Settings'>;
 
-// Define setting item interfaces for type safety
 interface SettingItemProps {
   icon: React.ReactNode;
   title: string;
@@ -99,7 +96,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Check and request location permissions
   const checkLocationPermission = async (): Promise<void> => {
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
@@ -110,7 +106,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Request location permission
   const requestLocationPermission = async (): Promise<boolean> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -122,14 +117,12 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Get theme-based styles
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const sectionStyle = isDarkMode ? styles.darkSection : styles.lightSection;
   const itemStyle = isDarkMode ? styles.darkItem : styles.lightItem;
 
-  // Language modal handling
   const openLanguageModal = (): void => {
     setLangModalVisible(true);
   };
@@ -144,7 +137,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     return currentLang?.flag;
   };
 
-  // Theme handling
   const handleThemeChange = (): void => {
     Alert.alert(
       t('changeTheme', 'settings'),
@@ -206,7 +198,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Setting item components with proper typing
   const SettingItem: React.FC<SettingItemProps> = ({
     icon,
     title,
@@ -278,7 +269,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  // Dynamic settings data
   const accountSettings = [
     {
       icon: <Text style={styles.iconText}>🔑</Text>,
@@ -399,13 +389,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
         <View style={{ width: 24 }} />
       </View>
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#6366F1' : '#4F46E5'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, headerTextStyle]}>{t('settings', 'common')}</Text>
-        <View style={styles.headerRight} />
-      </View> */}
+  
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Account Section */}
@@ -602,7 +586,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-// Updated color palette with more modern indigo/purple hues
 const colors = {
   light: {
     background: '#F9FAFB',
