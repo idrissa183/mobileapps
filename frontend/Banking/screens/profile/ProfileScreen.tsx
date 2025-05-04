@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
 import authService from '../../services/authService';
+import useAuth from '../../hooks/useAuth';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,8 @@ const ProfileScreen = ({ navigation }) => {
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const dividerStyle = isDarkMode ? styles.darkDivider : styles.lightDivider;
+
+  const { logout } = useAuth();
 
   useEffect(() => {
     fetchUserData();
@@ -57,11 +60,12 @@ const ProfileScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await authService.logout();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
+              await logout();
+              navigation.navigate('SignIn');
+              // navigation.reset({
+              //   index: 0,
+              //   routes: [{ name: 'AuthStack' }],
+              // });
             } catch (error) {
               Alert.alert('Erreur', 'Échec de la déconnexion');
             }

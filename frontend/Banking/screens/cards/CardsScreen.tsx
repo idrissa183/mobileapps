@@ -12,8 +12,10 @@ import {
   Modal,
   TextInput
 } from "react-native";
+import {Picker} from '@react-native-picker/picker';
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
 import transactionService, {TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';
@@ -40,7 +42,10 @@ const CardsScreen: React.FC = () => {
 
   // States
   const [cards, setCards] = useState<Card[]>([]);
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
+
+  // State to track selected card and CVV visibility
+  const [selectedCard, setSelectedCard] = useState(cards[0]);
   const [isCvvVisible, setIsCvvVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cardsLoading, setCardsLoading] = useState(true);
@@ -241,7 +246,7 @@ const CardsScreen: React.FC = () => {
     setIsCvvVisible(!isCvvVisible);
   };
 
-  const formatNumberWithCommas = (number: number) => {
+  const formatNumberWithCommas = (number: string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
