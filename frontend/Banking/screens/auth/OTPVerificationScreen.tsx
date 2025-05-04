@@ -19,7 +19,6 @@ import useTheme from '../../hooks/useTheme';
 import useTranslation from '../../hooks/useTranslation';
 import authService from '../../services/authService';
 import SafeAreaWrapper from '../../components/common/SafeAreaWrapper';
-import Loader from '../../components/common/Loader';
 import Button from '../../components/common/Button';
 
 
@@ -227,7 +226,7 @@ const OTPVerificationScreen = () => {
             </KeyboardAvoidingView>
 
             {/* Loading overlay */}
-            {isVerifying && <Loader fullScreen />}
+            {isVerifying}
         </SafeAreaWrapper>
     );
 };

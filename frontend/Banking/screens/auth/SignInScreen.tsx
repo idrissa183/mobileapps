@@ -7,22 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import SafeAreaWrapper from "../../components/common/SafeAreaWrapper";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
-import Loader from "../../components/common/Loader";
 
 import useTheme from "../../hooks/useTheme";
 import useTranslation from "../../hooks/useTranslation";
 import { RootStackParamList } from "../../App";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import useAuth from "../../hooks/useAuth";
-
-// type RootStackParamList = {
-//   SignIn: undefined;
-//   SignUp: undefined;
-//   ForgotPassword: undefined;
-//   MainApp: undefined;
-//   OtpVerification: { email: string; mode: 'login' | 'register' };
-// };
 
 const languages = [
   { id: 'en', name: 'English', flag: require('../../assets/flags/usa.png') },
@@ -41,7 +30,6 @@ const SignInScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  // const [isLoading, setIsLoading] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [errors, setErrors] = useState({
     username: '',
@@ -76,10 +64,6 @@ const SignInScreen = () => {
 
     try {
       await login(username, password);
-
-      // if (!needsOtpVerification) {
-      //   navigation.navigate('MainApp');
-      // }
     } catch (error: any) {
       if (needsOtpVerification && pendingEmail) {
         navigation.navigate('OTPVerification', {

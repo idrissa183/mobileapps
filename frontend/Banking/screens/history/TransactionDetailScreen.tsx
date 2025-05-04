@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Transaction, TransactionType } from '../../services/transactionService';
+import { TransactionType } from '../../services/transactionService';
 import { useTranslation } from '../../hooks/useTranslation';
 import useTheme from '../../hooks/useTheme';
 import { MainTabParamList } from '../../App';
@@ -30,7 +30,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const borderStyle = isDarkMode ? styles.darkBorder : styles.lightBorder;
 
-  // Détermine si la transaction est positive (dépôt ou transfert entrant)
   const isPositiveTransaction = () => {
     return transaction.transaction_type === TransactionType.DEPOSIT ||
       (transaction.transaction_type === TransactionType.TRANSFER && transaction.amount > 0);
@@ -72,7 +71,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  // Obtenir l'icône du statut de la transaction
   const getStatusIcon = () => {
     switch(transaction.status) {
       case 'completed':
@@ -86,7 +84,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  // Obtenir l'icône du type de transaction
   const getTransactionIcon = () => {
     switch (transaction.transaction_type) {
       case TransactionType.DEPOSIT:
@@ -221,7 +218,6 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 <TouchableOpacity 
                   style={[styles.actionButton, styles.cancelButton]}
                   onPress={() => {
-                    // Action à implementer: annuler la transaction
                   }}
                 >
                   <Ionicons name="close-circle-outline" size={24} color="#EF4444" />

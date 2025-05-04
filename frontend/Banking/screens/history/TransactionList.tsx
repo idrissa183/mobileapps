@@ -2,10 +2,8 @@ import React from 'react';
 import {
     View,
     Text,
-    Image,
     StyleSheet,
     Dimensions,
-    ActivityIndicator,
     TouchableOpacity
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';

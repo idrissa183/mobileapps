@@ -17,7 +17,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import SafeAreaWrapper from '../../components/common/SafeAreaWrapper';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Loader from '../../components/common/Loader';
 
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';

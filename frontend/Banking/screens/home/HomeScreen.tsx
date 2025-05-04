@@ -28,22 +28,18 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const headerTextStyle = isDarkMode ? styles.darkHeaderText : styles.lightHeaderText;
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
 
-  // États pour les transactions et le chargement
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // État pour les taux de change
   const [currRates, setCurrRates] = useState<{ currency: string; rate: number | null }[]>([]);
   const [balance, setBalance] = useState(1230.60);
 
   useEffect(() => {
-    // Charger les transactions
     const loadTransactions = async () => {
       try {
         setIsLoading(true);
         const result = await transactionService.getTransactions({ 
           limit: 5,
-          // Trié par date décroissante par défaut sur l'API
         });
         setTransactions(result);
       } catch (error) {
@@ -53,7 +49,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       }
     };
 
-    // Charger les taux de change
     const retrieveCurrRates = async () => {
       try {
         const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
@@ -64,7 +59,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         setCurrRates(currRatesArray);
       } catch (error) {
         console.error('Error fetching currency rates:', error);
-        // Valeurs par défaut au cas où
         setCurrRates([
           { currency: 'USD', rate: 1 },
           { currency: 'XOF', rate: 603.11 },
