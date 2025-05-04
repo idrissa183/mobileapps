@@ -253,7 +253,7 @@ export default {
     locationServicesEnabled: "Location is enabled",
     locationServicesDisabled: "Location is disabled",
     linkError: "Error opening link",
-    cannotOpenLink: "Cannot open this link"
+    cannotOpenLink: "Cannot open this link",
   },
   transactions: {
     title: 'Transactions',
