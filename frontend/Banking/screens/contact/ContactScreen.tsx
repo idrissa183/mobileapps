@@ -45,8 +45,6 @@ const ContactScreen: React.FC = () => {
       const data = await contactService.getContacts(search);
       setContacts(data);
 
-      // Pour cet exemple, nous considérons les 3 premiers contacts comme fréquents
-      // Dans une vraie application, cela pourrait être basé sur des statistiques de transaction
       setFrequentContacts(data.slice(0, 3));
     } catch (err) {
       console.error('Failed to fetch contacts:', err);
@@ -174,13 +172,6 @@ const ContactScreen: React.FC = () => {
           />
         }
       >
-        {/* Header avec le titre et le bouton d'ajout de contact */}
-        {/* <View style={styles.header}>
-          <Text style={[styles.headerTitle, headerTextStyle]}>{t('contacts.title')}</Text>
-          <TouchableOpacity style={styles.addButton} onPress={() => {}}>
-            <Ionicons name="person-add-outline" size={24} color={isDarkMode ? '#818CF8' : '#4F46E5'} />
-          </TouchableOpacity>
-        </View> */}
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, inputContainerStyle]}>

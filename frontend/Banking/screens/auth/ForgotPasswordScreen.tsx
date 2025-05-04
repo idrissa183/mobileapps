@@ -7,7 +7,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import SafeAreaWrapper from '../../components/common/SafeAreaWrapper';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Loader from '../../components/common/Loader';
 
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -217,12 +216,11 @@ const ForgotPasswordScreen = () => {
       </Modal>
       
       {/* Loading overlay */}
-      {isLoading && <Loader fullScreen />}
+      {isLoading}
     </SafeAreaWrapper>
   );
 };
 
-// La correction principale: utilisation directe de StyleSheet.create au lieu d'une fonction qui prend isDarkMode
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

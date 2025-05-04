@@ -18,6 +18,7 @@ import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../.
 import transactionService, { TransactionType, Currency, TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';
 import { useNavigation } from '@react-navigation/native';
+import contactService, { Contact } from '../../services/contactService';
 
 const { width } = Dimensions.get('window');
 
@@ -57,15 +58,14 @@ const CardsScreen: React.FC = () => {
   const [transactionAmount, setTransactionAmount] = useState('');
   const [transactionDescription, setTransactionDescription] = useState('');
   const [recipientAccountNumber, setRecipientAccountNumber] = useState('');
-  const [contacts, setContacts] = useState<{ name: string, account_number: string }[]>([
-    { name: 'John Doe', account_number: '1234567890' },
-    { name: 'Jane Smith', account_number: '0987654321' },
-    { name: 'Mike Johnson', account_number: '1122334455' },
-  ]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactsLoading, setContactsLoading] = useState<boolean>(false);
+
 
   // Fetch cards on load
   useEffect(() => {
     fetchCards();
+    fetchContacts();
   }, []);
 
   // Function to fetch cards
@@ -75,17 +75,29 @@ const CardsScreen: React.FC = () => {
       const fetchedCards = await cardService.getAllCards();
       setCards(fetchedCards);
 
-      // Select first card by default if one exists
       if (fetchedCards.length > 0 && !selectedCard) {
         setSelectedCard(fetchedCards[0]);
       }
     } catch (error) {
       console.error('Error fetching cards:', error);
-      // You could add an error notification here
     } finally {
       setCardsLoading(false);
     }
   };
+
+  // Function to fetech contacts
+  const fetchContacts = async () => {
+    setContactsLoading(true);
+    try {
+      const data = await contactService.getContacts();
+      setContacts(data);
+    } catch (err) {
+      console.error('Failed to fetch contacts:', err);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
 
   // Function to open new card modal
   const openNewCardModal = () => {
@@ -109,14 +121,12 @@ const CardsScreen: React.FC = () => {
 
       const newCard = await cardService.createCard(newCardData);
 
-      // Add new card and select it
       setCards(prevCards => [...prevCards, newCard]);
       setSelectedCard(newCard);
       setIsNewCardModalVisible(false);
 
     } catch (error) {
       console.error('Error creating new card:', error);
-      // You could add an error notification here
     } finally {
       setLoading(false);
     }
@@ -132,7 +142,6 @@ const CardsScreen: React.FC = () => {
   // Handle Top Up (Deposit)
   const handleTopUp = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
       return;
     }
 
@@ -146,11 +155,9 @@ const CardsScreen: React.FC = () => {
       await transactionService.depositMoney(depositData);
       setIsTopUpModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
 
     } catch (error) {
       console.error('Error depositing money:', error);
-      // You could add an error notification here
     } finally {
       setLoading(false);
     }
@@ -159,7 +166,6 @@ const CardsScreen: React.FC = () => {
   // Handle Withdraw
   const handleWithdraw = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
       return;
     }
 
@@ -173,11 +179,9 @@ const CardsScreen: React.FC = () => {
       await transactionService.withdrawMoney(withdrawalData);
       setIsWithdrawModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
 
     } catch (error) {
       console.error('Error withdrawing money:', error);
-      // You could add an error notification here
     } finally {
       setLoading(false);
     }
@@ -186,7 +190,6 @@ const CardsScreen: React.FC = () => {
   // Handle Transfer
   const handleTransfer = async () => {
     if (!recipientAccountNumber || !transactionAmount || parseFloat(transactionAmount) <= 0) {
-      // Show error
       return;
     }
 
@@ -201,11 +204,9 @@ const CardsScreen: React.FC = () => {
       await transactionService.transferMoney(transferData);
       setIsTransferModalVisible(false);
       resetTransactionInputs();
-      // You could add a success notification here
 
     } catch (error) {
       console.error('Error transferring money:', error);
-      // You could add an error notification here
     } finally {
       setLoading(false);
     }
@@ -213,7 +214,7 @@ const CardsScreen: React.FC = () => {
 
   const handleCardClick = (card: Card) => {
     setSelectedCard(card);
-    setIsCvvVisible(false); // Reset CVV visibility when changing cards
+    setIsCvvVisible(false);
   };
 
   const toggleCvvVisibility = () => {
@@ -236,10 +237,8 @@ const CardsScreen: React.FC = () => {
     return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
   };
 
-  // Example balance - In a real app, this would come from your API
   const balance = 1230.60;
 
-  // Create Card Button Component - Always shown regardless of cards existence
   const CreateCardButton = () => (
     <TouchableOpacity
       style={styles.createCardButton}
@@ -671,28 +670,38 @@ const CardsScreen: React.FC = () => {
             <View style={styles.modalContent}>
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('transactions.recipient')}</Text>
-                <View style={[styles.dropdown, inputStyle]}>
-                  <ScrollView style={styles.dropdownList}>
-                    {contacts.map((contact, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.dropdownItem,
-                          recipientAccountNumber === contact.account_number && styles.selectedDropdownItem
-                        ]}
-                        onPress={() => setRecipientAccountNumber(contact.account_number)}
-                      >
-                        <Text style={[
-                          styles.dropdownText,
-                          recipientAccountNumber === contact.account_number && styles.selectedDropdownText,
-                          isDarkMode && styles.darkDropdownText
-                        ]}>
-                          {contact.name} ({contact.account_number})
+                {contactsLoading ? (
+                  <ActivityIndicator size="small" color={isDarkMode ? "#818CF8" : "#4F46E5"} />
+                ) : (
+                  <View style={[styles.dropdown, inputStyle]}>
+                    <ScrollView style={styles.dropdownList}>
+                      {contacts.length > 0 ? (
+                        contacts.map((contact) => (
+                          <TouchableOpacity
+                            key={contact.id}
+                            style={[
+                              styles.dropdownItem,
+                              recipientAccountNumber === contact.account_number && styles.selectedDropdownItem
+                            ]}
+                            onPress={() => setRecipientAccountNumber(contact.account_number)}
+                          >
+                            <Text style={[
+                              styles.dropdownText,
+                              recipientAccountNumber === contact.account_number && styles.selectedDropdownText,
+                              isDarkMode && styles.darkDropdownText
+                            ]}>
+                              {contact.full_name} ({contact.account_number})
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <Text style={[styles.dropdownText, isDarkMode && styles.darkDropdownText]}>
+                          {t('contacts.noContacts')}
                         </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={styles.inputGroup}>

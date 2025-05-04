@@ -61,7 +61,7 @@ export default {
     invalidEmail: 'Veuillez entrer une adresse email valide',
     resetLinkSent: 'Lien de réinitialisation envoyé !',
     checkEmailForInstructions: 'Veuillez vérifier votre email pour les instructions de réinitialisation de votre mot de passe.',
-    rememberPassword: 'Souvenezvous de votre mot de passe ?',
+    rememberPassword: 'Souvenez vous de votre mot de passe ?',
     backToLogin: 'Retour à la connexion',
     sendResetLink: 'Envoyer le lien de réinitialisation',
     logout: 'Déconnexion',
