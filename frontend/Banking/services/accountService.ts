@@ -18,24 +18,12 @@ export interface Account {
 const accountService = {
     /**
      * Récupère le compte bancaire de l'utilisateur connecté
-     * Cette fonction utilise les transactions pour récupérer le compte associé
+     * Cette fonction appelle directement l'endpoint du compte
      */
     getUserAccount: async (): Promise<Account> => {
         try {
-            const response: AxiosResponse<any[]> = await api.get('/banking/transactions', {
-                params: {
-                    limit: 1
-                }
-            });
-
-            if (response.data && response.data.length > 0) {
-                const accountId = response.data[0].account_id;
-
-                const accountResponse: AxiosResponse<Account> = await api.get(`/banking/accounts`);
-                return accountResponse.data;
-            } else {
-                throw new Error('Aucune transaction trouvée pour récupérer le compte');
-            }
+            const accountResponse: AxiosResponse<Account> = await api.get('/banking/accounts');
+            return accountResponse.data;
         } catch (error) {
             console.error('Erreur lors de la récupération du compte:', error);
             throw error;

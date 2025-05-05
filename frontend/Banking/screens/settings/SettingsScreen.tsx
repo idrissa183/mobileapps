@@ -12,7 +12,6 @@ import {
   FlatList,
   Image,
   Platform,
-  ActivityIndicator
 } from "react-native";
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -180,15 +179,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleLogout = async (): Promise<void> => {
     try {
-      setIsLoggingOut(true); 
+      setIsLoggingOut(true);
       await logout();
-      
+
       setTimeout(() => {
         setLogoutModalVisible(false);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'AuthStack' }],
-        });
       }, 500);
     } catch (error: any) {
       setIsLoggingOut(false);
@@ -398,26 +393,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={{ width: 24 }} />
       </View>
 
-      
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Account Section 
-        <SectionHeader title={t('account', 'settings').toUpperCase()} />
-        <Section>
-          {accountSettings.map((setting, index) => (
-            <React.Fragment key={`account-${index}`}>
-              <SettingItem
-                icon={setting.icon}
-                title={setting.title}
-                subtitle={setting.subtitle}
-                onPress={setting.onPress}
-              />
-              {index < accountSettings.length - 1 && <View style={styles.divider} />}
-            </React.Fragment>
-          ))}
-        </Section>
-        */}
-        
 
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Preferences Section */}
         <SectionHeader title={t('preferences', 'settings').toUpperCase()} />
         <Section>
@@ -603,49 +580,42 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, isDarkMode ? styles.darkModal : styles.lightModal]}>
             <View style={styles.logoutModalContent}>
-              {isLoggingOut ? (
-                <>
-                  <ActivityIndicator size="large" color="#6366F1" style={styles.loadingIndicator} />
-                  <Text style={[styles.logoutModalMessage, secondaryTextStyle]}>
-                    {t('loggingOut', 'auth') || 'Logging out...'}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <View style={styles.logoutIconContainer}>
-                    <Ionicons 
-                      name="log-out-outline" 
-                      size={40} 
-                      color="#6366F1"
-                    />
-                  </View>
-                  
-                  <Text style={[styles.logoutModalTitle, headerTextStyle]}>
-                    {t('confirmLogout', 'auth') || 'Confirm Logout'}
-                  </Text>
-                  
-                  
-                  <View style={styles.logoutModalButtons}>
-                    <TouchableOpacity
-                      style={[styles.modalButton, styles.cancelButton]}
-                      onPress={() => setLogoutModalVisible(false)}
-                    >
-                      <Text style={styles.cancelButtonText}>
-                        {t('cancel', 'common') || 'Cancel'}
-                      </Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={[styles.modalButton, styles.confirmButton]}
-                      onPress={handleLogout}
-                    >
-                      <Text style={styles.confirmButtonText}>
-                        {t('logoutConfirm', 'auth')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
+
+              <>
+                <View style={styles.logoutIconContainer}>
+                  <Ionicons
+                    name="log-out-outline"
+                    size={40}
+                    color="#6366F1"
+                  />
+                </View>
+
+                <Text style={[styles.logoutModalTitle, headerTextStyle]}>
+                  {t('confirmLogout', 'auth') || 'Confirm Logout'}
+                </Text>
+
+
+                <View style={styles.logoutModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setLogoutModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>
+                      {t('cancel', 'common') || 'Cancel'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.confirmButton]}
+                    onPress={handleLogout}
+                  >
+                    <Text style={styles.confirmButtonText}>
+                      {t('logoutConfirm', 'auth')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+
             </View>
           </View>
         </View>
@@ -688,7 +658,7 @@ const colors = {
     selectedItem: '#312E81',
     cancelButton: '#334155',
     cancelText: '#F1F5F9',
-    confirmButton: '#EF4444', 
+    confirmButton: '#EF4444',
     confirmText: '#FFFFFF',
   }
 };

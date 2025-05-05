@@ -120,9 +120,7 @@ const SignInScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.container}>
         {/* Header with language selector */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
-          </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.languageSelector}
@@ -182,11 +180,7 @@ const SignInScreen = () => {
                 <Text style={styles.rememberText}>{t('rememberMe', 'auth')}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                <Text style={styles.forgotPassword}>
-                  {t('forgotPassword', 'auth')}
-                </Text>
-              </TouchableOpacity>
+
             </View>
 
             <Button
@@ -291,7 +285,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     height: 60,
     paddingHorizontal: 24,

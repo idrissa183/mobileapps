@@ -355,14 +355,12 @@ async def create_transfer(
                 detail="Impossible de transférer vers le même compte"
             )
 
-        conversion_info = ""
         exchange_rate = Decimal(1)
         converted_amount = amount
 
         if from_account.currency != to_account.currency:
             exchange_rate = await get_exchange_rate(from_account.currency, to_account.currency)
             converted_amount = amount * exchange_rate
-            conversion_info = f" (Taux de change: 1 {from_account.currency.value} = {exchange_rate} {to_account.currency.value})"
 
         to_account_user = await to_account.user.fetch()
         now = datetime.now(UTC)
@@ -375,7 +373,7 @@ async def create_transfer(
             transaction_type=TransactionType.TRANSFER,
             amount=-float(amount),
             currency=from_account.currency,
-            description=transfer_data.description or f"Transfert vers {to_account_user.full_name}{conversion_info}",
+            description=transfer_data.description or "Transfert",
             status=TransactionStatus.COMPLETED,
             recipient_account=to_account,
             recipient_name=to_account_user.full_name,
@@ -390,7 +388,7 @@ async def create_transfer(
             transaction_type=TransactionType.DEPOSIT,
             amount=float(converted_amount),  # Montant positif pour le destinataire
             currency=to_account.currency,
-            description=f"Transfert de {current_user.full_name}{conversion_info}",
+            description=transfer_data.description or "Transfert",
             status=TransactionStatus.COMPLETED,
             transaction_date=now
         )

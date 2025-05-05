@@ -1,4 +1,3 @@
-// Common response types
 export interface ApiError {
     statusCode: number;
     message: string;
@@ -7,8 +6,8 @@ export interface ApiError {
 }
 
 // Common date types
-export type ISODateString = string; // YYYY-MM-DD
-export type ISODateTimeString = string; // YYYY-MM-DDTHH:mm:ss.sssZ
+export type ISODateString = string; 
+export type ISODateTimeString = string; 
 
 // Paginated response interface
 export interface PaginatedResponse<T> {

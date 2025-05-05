@@ -24,7 +24,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [balanceLoading, setBalanceLoading] = useState(true);
-  
+
   const [balances, setBalances] = useState<Array<{
     id: number;
     amount: string;
@@ -42,28 +42,28 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       try {
         setIsLoading(true);
         setBalanceLoading(true);
-        
-        const recentTransactions = await transactionService.getTransactions({ 
-          limit: 5,
-        });
-        setTransactions(recentTransactions);
-        
-        const userAccount = await accountService.getUserAccount();
-        
-        const updatedBalances = [...balances];
-        const usdIndex = updatedBalances.findIndex(b => b.currency === Currency.USD);
-        if (usdIndex !== -1) {
-          updatedBalances[usdIndex] = {
-            ...updatedBalances[usdIndex],
-            amount: formatNumberWithCommas(userAccount.balance.toFixed(2)),
-            loading: false
-          };
-        }
-        
+
+        const [transactions, account] = await Promise.all([
+          transactionService.getTransactions({ limit: 5 }),
+          accountService.getUserAccount()
+        ]);
+
+        setTransactions(transactions);
+
+        // Mise à jour immédiate du solde USD
+        const updatedBalances = balances.map(b =>
+          b.currency === Currency.USD
+            ? {
+              ...b,
+              amount: formatNumberWithCommas(account.balance.toFixed(2)),
+              loading: false
+            }
+            : b
+        );
+
         setBalances(updatedBalances);
-        
-        await convertBalancesToOtherCurrencies(userAccount.balance);
-        
+
+        await convertBalancesToOtherCurrencies(account.balance, updatedBalances);
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
       } finally {
@@ -75,10 +75,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     loadUserData();
   }, []);
 
-  const convertBalancesToOtherCurrencies = async (usdBalance: number) => {
+  const convertBalancesToOtherCurrencies = async (usdBalance: number, baseBalances: typeof balances) => {
     try {
-      const updatedBalances = [...balances];
-      
+      const updatedBalances = [...baseBalances];
+
       const eurIndex = updatedBalances.findIndex(b => b.currency === Currency.EUR);
       if (eurIndex !== -1) {
         try {
@@ -97,7 +97,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           updatedBalances[eurIndex].loading = false;
         }
       }
-      
+
       const xofIndex = updatedBalances.findIndex(b => b.currency === Currency.XOF);
       if (xofIndex !== -1) {
         try {
@@ -116,12 +116,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           updatedBalances[xofIndex].loading = false;
         }
       }
-      
+
       setBalances(updatedBalances);
     } catch (error) {
       console.error('Erreur lors de la conversion des devises:', error);
     }
   };
+
 
   const formatNumberWithCommas = (number: string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -134,7 +135,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.header}>
           <Text style={[styles.headerTitle, headerTextStyle]}>{t('balance', 'home')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-            <Image 
+            <Image
               source={require('../../assets/avatars/avatar2.jpg')}
               style={styles.avatar}
             />
@@ -142,9 +143,9 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Section des soldes avec défilement horizontal */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.balanceScrollContainer}
         >
           {balances.map((balance) => (
@@ -178,7 +179,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Section des transactions */}
-        <TransactionsList 
+        <TransactionsList
           transactions={transactions}
           isLoading={isLoading}
           showHeader={true}

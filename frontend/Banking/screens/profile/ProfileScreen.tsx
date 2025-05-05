@@ -1,27 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  SafeAreaView, 
-  StyleSheet, 
-  Image, 
+import {
+  View,
+  Text,
+  ScrollView,
+  SafeAreaView,
+  StyleSheet,
+  Image,
   TouchableOpacity,
-  Switch,
   Dimensions,
   Alert,
   ActivityIndicator
 } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import authService from '../../services/authService';
 import useAuth from '../../hooks/useAuth';
+import { UserProfile } from '../../services/types';
+import useTranslation from '../../hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
-  const { isDarkMode, toggleTheme } = useTheme();
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
-  const [userData, setUserData] = useState(null);
+  const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
+
+  const [userData, setUserData] = useState<UserProfile>();
   const [loading, setLoading] = useState(true);
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
@@ -43,7 +46,6 @@ const ProfileScreen = ({ navigation }) => {
       setUserData(user);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de récupérer vos informations');
-      console.error('Erreur lors de la récupération des informations utilisateur:', error);
     } finally {
       setLoading(false);
     }
@@ -55,149 +57,92 @@ const ProfileScreen = ({ navigation }) => {
       'Êtes-vous sûr de vouloir vous déconnecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Déconnexion', 
+        {
+          text: 'Déconnexion',
           style: 'destructive',
           onPress: async () => {
             try {
               await logout();
-              navigation.navigate('SignIn');
-              // navigation.reset({
-              //   index: 0,
-              //   routes: [{ name: 'AuthStack' }],
-              // });
             } catch (error) {
               Alert.alert('Erreur', 'Échec de la déconnexion');
             }
-          } 
+          }
         }
       ]
     );
   };
 
   const menuItems = [
-    { id: 1, title: 'Informations Personnelles', icon: '👤', screen: 'PersonalInfo' },
-    { id: 2, title: 'Méthodes de Paiement', icon: '💳', screen: 'PaymentMethods' },
-    { id: 3, title: 'Historique des Transactions', icon: '📊', screen: 'History' },
-    { id: 4, title: 'Inviter des Amis', icon: '👥', screen: 'InviteFriends' },
-    { id: 5, title: 'Aide & Support', icon: '❓', screen: 'Support' },
-    { id: 6, title: 'Conditions & Confidentialité', icon: '📜', screen: 'Terms' },
-    { id: 7, title: 'Changer le Mot de Passe', icon: '🔒', screen: 'ChangePassword' },
+    { id: 3, title: t('history', 'profile'), icon: '📊', screen: 'History' },
+    { id: 4, title: t('invite', 'profile'), icon: '👥', screen: 'InviteFriends' },
   ];
 
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, containerStyle, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#1E40AF" />
-        <Text style={[styles.loadingText, headerTextStyle]}>Chargement du profil...</Text>
+        <Text style={[styles.loadingText, headerTextStyle]}> {t('loading', 'profile')}</Text>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
+      {/* Header with back button and title */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, headerTextStyle]}>{t('title', 'profile')}</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header avec bouton de retour et titre */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={[styles.backButton, headerTextStyle]}>←</Text>
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, headerTextStyle]}>Profil</Text>
-          <View style={{ width: 24 }} /> {/* Espace pour équilibrer le header */}
-        </View>
+
 
         {/* Section du profil utilisateur */}
         <View style={[styles.profileCard, cardStyle]}>
           <View style={styles.profileInfo}>
-            <Image 
-              source={userData?.profile_image 
-                ? { uri: userData.profile_image } 
-                : require('../../assets/avatars/avatar2.jpg')} 
-              style={styles.profileAvatar} 
+            <Image
+              source={userData?.profile_image
+                ? { uri: userData.profile_image }
+                : require('../../assets/avatars/avatar2.jpg')}
+              style={styles.profileAvatar}
             />
             <View style={styles.profileDetails}>
-              <Text style={[styles.profileName, headerTextStyle]}>{userData?.full_name || 'Utilisateur'}</Text>
-              <Text style={[styles.profileEmail, secondaryTextStyle]}>{userData?.email || 'utilisateur@exemple.com'}</Text>
-              {userData?.phone && (
-                <Text style={[styles.profilePhone, secondaryTextStyle]}>{userData.phone}</Text>
-              )}
+              <Text style={[styles.profileName, headerTextStyle]}>{userData?.full_name}</Text>
+              <Text style={[styles.profileEmail, secondaryTextStyle]}>{userData?.email}</Text>
             </View>
           </View>
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => navigation.navigate('EditProfile', { userData })}
-          >
-            <Text style={styles.editButtonText}>Modifier</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Statistiques utilisateur */}
         <View style={[styles.statsCard, cardStyle]}>
           <View style={styles.statItem}>
-            <Text style={[styles.statNumber, headerTextStyle]}>
-              {userData?.transactions_count || 0}
-            </Text>
-            <Text style={[styles.statLabel, secondaryTextStyle]}>Transactions</Text>
+            
+            <Text style={[styles.statLabel, secondaryTextStyle]}>  {t('transactions', 'profile')}</Text>
           </View>
           <View style={[styles.statDivider, dividerStyle]} />
           <View style={styles.statItem}>
-            <Text style={[styles.statLabel, secondaryTextStyle]}>Membre depuis</Text>
+            <Text style={[styles.statLabel, secondaryTextStyle]}>{t('memberSince', 'profile')}</Text>
             <Text style={[styles.statValue, headerTextStyle]}>
-              {userData?.created_at 
-                ? new Date(userData.created_at).toLocaleDateString('fr-FR', { 
-                    year: 'numeric', 
-                    month: 'long' 
-                  }) 
-                : 'Non disponible'}
+              {userData?.created_at
+                ? new Date(userData.created_at).toLocaleDateString('fr-FR', {
+                  year: 'numeric',
+                  month: 'long'
+                })
+                : t('notAvailable', 'profile')}
             </Text>
-          </View>
-        </View>
-
-        {/* Paramètres */}
-        <View style={styles.settingsSection}>
-          <Text style={[styles.sectionTitle, headerTextStyle]}>Paramètres</Text>
-          
-          <View style={[styles.settingCard, cardStyle]}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Text style={styles.settingIcon}>🌓</Text>
-                <Text style={[styles.settingText, headerTextStyle]}>Mode Sombre</Text>
-              </View>
-              <Switch
-                trackColor={{ false: "#767577", true: "#1E40AF" }}
-                thumbColor={isDarkMode ? "#ffffff" : "#f4f3f4"}
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={toggleTheme}
-                value={isDarkMode}
-              />
-            </View>
-            
-            <View style={[styles.settingDivider, dividerStyle]} />
-            
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Text style={styles.settingIcon}>🔔</Text>
-                <Text style={[styles.settingText, headerTextStyle]}>Notifications</Text>
-              </View>
-              <Switch
-                trackColor={{ false: "#767577", true: "#1E40AF" }}
-                thumbColor={isNotificationsEnabled ? "#ffffff" : "#f4f3f4"}
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={setIsNotificationsEnabled}
-                value={isNotificationsEnabled}
-              />
-            </View>
           </View>
         </View>
 
         {/* Menu */}
         <View style={styles.menuSection}>
-          <Text style={[styles.sectionTitle, headerTextStyle]}>Menu</Text>
-          
+          <Text style={[styles.sectionTitle, headerTextStyle]}>  {t('menu', 'profile')}</Text>
+
           <View style={[styles.menuCard, cardStyle]}>
             {menuItems.map((item, index) => (
               <React.Fragment key={item.id}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.menuItem}
                   onPress={() => navigation.navigate(item.screen, { userData })}
                 >
@@ -216,7 +161,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         {/* Bouton de déconnexion */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
         >
@@ -234,7 +179,7 @@ const styles = StyleSheet.create({
   // Styles de base
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 30,
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -424,7 +369,7 @@ const styles = StyleSheet.create({
   bottomSpace: {
     height: 40,
   },
-  
+
   // Styles pour le mode clair
   lightContainer: {
     backgroundColor: '#FFFFFF',
@@ -441,7 +386,7 @@ const styles = StyleSheet.create({
   lightDivider: {
     backgroundColor: '#E5E7EB',
   },
-  
+
   // Styles pour le mode sombre
   darkContainer: {
     backgroundColor: '#0F172A',

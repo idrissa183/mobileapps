@@ -23,7 +23,7 @@ const ITEMS_PER_PAGE = 10;
 type Props = NativeStackScreenProps<MainTabParamList, 'History'>;
 
 const HistoryScreen: React.FC<Props> = ({ navigation }) => {
-  
+
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
 
@@ -137,12 +137,12 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
     if (!filteredTransactions) return {};
 
     return filteredTransactions.reduce<Record<string, Transaction[]>>((groups, transaction) => {
-        const date = formatDateForGrouping(transaction.transaction_date);
-        if (!groups[date]) {
-            groups[date] = [];
-        }
-        groups[date].push(transaction);
-        return groups;
+      const date = formatDateForGrouping(transaction.transaction_date);
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(transaction);
+      return groups;
     }, {});
   };
 
@@ -259,11 +259,12 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.mainContentContainer}>
         {/* Filtres */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-        >
-          <View style={styles.filterContainer}>
+        <View style={styles.filtersWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterContainer}
+          >
             {filters.map(filter => (
               <TouchableOpacity
                 key={filter}
@@ -283,8 +284,8 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
 
         {/* Liste des transactions */}
         {isLoading && !transactions ? (
@@ -451,6 +452,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   mainContentContainer: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
   },
@@ -461,12 +463,14 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
     paddingRight: 8,
+    paddingBottom: 8,
   },
   filterButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
+    height: 36,
   },
   filterText: {
     fontSize: 14,
@@ -482,6 +486,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   transactionsList: {
+    flex: 1,
     marginTop: 4,
   },
   dateGroup: {
@@ -503,7 +508,6 @@ const styles = StyleSheet.create({
   transactionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   transactionName: {
     fontSize: 16,
@@ -544,7 +548,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop:10,
   },
   loadingText: {
     marginTop: 16,
@@ -568,6 +571,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  filtersWrapper: {
+    maxHeight: 52, // Limite la hauteur de la zone des filtres
   },
 });
 

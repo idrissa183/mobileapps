@@ -12,10 +12,8 @@ import {
   Modal,
   TextInput
 } from "react-native";
-import {Picker} from '@react-native-picker/picker';
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
 import transactionService, {TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';

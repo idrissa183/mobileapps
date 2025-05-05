@@ -192,7 +192,19 @@ export default {
     termsConditions: 'Conditions Générales',
     about: 'À Propos',
     logout: 'Déconnexion',
-    deleteAccount: 'Supprimer le Compte'
+    deleteAccount: 'Supprimer le Compte',
+    loading: 'Chargement du profil...',
+    errorFetching: 'Impossible de récupérer vos informations',
+    errorLogout: 'Échec de la déconnexion',
+    logoutConfirmation: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+    cancel: 'Annuler',
+    edit: 'Modifier',
+    transactions: 'Transactions',
+    memberSince: 'Membre depuis',
+    notAvailable: 'Non disponible',
+    menu: 'Menu',
+    history: 'Historique des Transactions',
+    invite: 'Inviter des Amis'
   },
   settings: {
     settings: 'Paramètres',

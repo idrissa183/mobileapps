@@ -191,8 +191,20 @@ export default {
     privacyPolicy: 'Privacy Policy',
     termsConditions: 'Terms & Conditions',
     about: 'About Us',
-    logout: 'Logout',
-    deleteAccount: 'Delete Account'
+    deleteAccount: 'Delete Account',
+    loading: 'Loading profile...',
+    errorFetching: 'Unable to retrieve your information',
+    errorLogout: 'Logout failed',
+    logoutConfirmation: 'Are you sure you want to log out?',
+    cancel: 'Cancel',
+    logout: 'Log Out',
+    edit: 'Edit',
+    transactions: 'Transactions',
+    memberSince: 'Member since',
+    notAvailable: 'Not available',
+    menu: 'Menu',
+    history: 'Transaction History',
+    invite: 'Invite Friends'
   },
   settings: {
     settings: 'Settings',
