@@ -43,6 +43,10 @@ L'utilisateur doit renseigner les informations suivantes :
 - Le code OTP doit être saisi dans un délai de **1 minute**
 - Une fois validé, l'utilisateur est redirigé automatiquement vers la page **Login**
 
+## Gestion de comptes bancaires
+Par défaut un utilisateur est crée avec un compte bancaire.
+Il a ensuite la possibilité de créer des cartes bancaires, d'éffectuer des opérations de debit (withdraw), creditation (Top Up), de transfert
+
 ## 🎨 Screenshots
 | Login | Signup | OTP Verification |
 |-------|--------|------------------|
@@ -73,10 +77,10 @@ L'utilisateur doit renseigner les informations suivantes :
 ## Architecture du projet 
 
 * **Backend**
-![architecture backend](backend-1.png)
+![architecture backend](/frontend/Banking/backend-1.png)
 
 * **Frontend**
-![alt text](frontend-1-1.png) ![alt text](frontend-2-1.png)
+![alt text](/frontend/Banking/frontend-1-1.png) ![alt text](/frontend/Banking/frontend-2-1.png)
 
 ##  Technologies utilisées
 
@@ -142,6 +146,8 @@ Lancer le projet en exécutant la commande suivante
 npm start
 ```
 
+## Test direct
+Utiliser l'apk et l'installer manuellement
 ## Contributeurs
 
 * **COMPAORE Walker**
