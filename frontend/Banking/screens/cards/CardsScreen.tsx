@@ -84,11 +84,6 @@ const CardsScreen: React.FC = () => {
       setBalance(userAccount.balance);
     } catch (error) {
       console.error('Error fetching balance:', error);
-      Alert.alert(
-        t('alerts.error'),
-        t('alerts.balanceError'),
-        [{ text: t('common.ok') }]
-      );
     } finally {
       setBalanceLoading(false);
     }

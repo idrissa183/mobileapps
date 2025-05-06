@@ -27,11 +27,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "3daf845c-1fd5-46d2-b385-a8ed1676cd38"
+        "projectId": "59a97b61-cab1-4384-9267-65e3a31b62d7"
       }
     },
     "cli": {
       "appVersionSource": "remote"
-    }
+    },
+    "owner": "drissa183"
   }
 }

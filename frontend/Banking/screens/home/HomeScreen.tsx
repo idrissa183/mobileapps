@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import transactionService, { Transaction, Currency } from '../../services/transactionService';
 import accountService from '../../services/accountService';
 import { MainTabParamList } from '../../App';
@@ -27,53 +28,58 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [balances, setBalances] = useState<Array<{
     id: number;
-    amount: string;
+    amount: number;
     currency: string;
     flag: any;
     loading: boolean;
   }>>([
-    { id: 1, amount: '0.00', currency: Currency.USD, flag: require('../../assets/flags/usd.jpg'), loading: true },
-    { id: 2, amount: '0.00', currency: Currency.XOF, flag: require('../../assets/flags/xof.jpg'), loading: true },
-    { id: 3, amount: '0.00', currency: Currency.EUR, flag: require('../../assets/flags/eur.jpg'), loading: true },
+    { id: 1, amount: 0.00, currency: Currency.USD, flag: require('../../assets/flags/usd.jpg'), loading: true },
+    { id: 2, amount: 0.00, currency: Currency.XOF, flag: require('../../assets/flags/xof.jpg'), loading: true },
+    { id: 3, amount: 0.00, currency: Currency.EUR, flag: require('../../assets/flags/eur.jpg'), loading: true },
   ]);
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        setIsLoading(true);
-        setBalanceLoading(true);
+  const loadUserData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setBalanceLoading(true);
 
-        const [transactions, account] = await Promise.all([
-          transactionService.getTransactions({ limit: 5 }),
-          accountService.getUserAccount()
-        ]);
+      const [transactions, account] = await Promise.all([
+        transactionService.getTransactions({ limit: 5 }),
+        accountService.getUserAccount()
+      ]);
 
-        setTransactions(transactions);
+      setTransactions(transactions);
 
-        // Mise à jour immédiate du solde USD
-        const updatedBalances = balances.map(b =>
-          b.currency === Currency.USD
-            ? {
-              ...b,
-              amount: formatNumberWithCommas(account.balance.toFixed(2)),
-              loading: false
-            }
-            : b
-        );
+      const updatedBalances = balances.map(b =>
+        b.currency === Currency.USD
+          ? {
+            ...b,
+            amount: formatNumberWithCommas((account.balance || 0).toFixed(2)),
+            loading: false
+          }
+          : b
+      );
 
-        setBalances(updatedBalances);
+      setBalances(updatedBalances);
 
-        await convertBalancesToOtherCurrencies(account.balance, updatedBalances);
-      } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-      } finally {
-        setIsLoading(false);
-        setBalanceLoading(false);
-      }
-    };
-
-    loadUserData();
+      await convertBalancesToOtherCurrencies(account.balance || 0, updatedBalances);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+      setBalances(prev => prev.map(b => ({ ...b, loading: false, amount: 0 })));
+    } finally {
+      setIsLoading(false);
+      setBalanceLoading(false);
+    }
   }, []);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+      return () => {
+      };
+    }, [loadUserData])
+  );
 
   const convertBalancesToOtherCurrencies = async (usdBalance: number, baseBalances: typeof balances) => {
     try {
@@ -82,47 +88,73 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       const eurIndex = updatedBalances.findIndex(b => b.currency === Currency.EUR);
       if (eurIndex !== -1) {
         try {
-          const eurAmount = await accountService.convertCurrency(
-            usdBalance,
-            Currency.USD,
-            Currency.EUR
-          );
-          updatedBalances[eurIndex] = {
-            ...updatedBalances[eurIndex],
-            amount: formatNumberWithCommas(eurAmount.toFixed(2)),
-            loading: false
-          };
+          if (usdBalance === 0) {
+            updatedBalances[eurIndex] = {
+              ...updatedBalances[eurIndex],
+              amount: 0,
+              loading: false
+            };
+          } else {
+            const eurAmount = await accountService.convertCurrency(
+              usdBalance,
+              Currency.USD,
+              Currency.EUR
+            );
+            updatedBalances[eurIndex] = {
+              ...updatedBalances[eurIndex],
+              amount: formatNumberWithCommas(eurAmount.toFixed(2)),
+              loading: false
+            };
+          }
         } catch (err) {
           console.error('Erreur lors de la conversion en EUR:', err);
-          updatedBalances[eurIndex].loading = false;
+          updatedBalances[eurIndex] = {
+            ...updatedBalances[eurIndex],
+            amount: 0,
+            loading: false
+          };
         }
       }
 
       const xofIndex = updatedBalances.findIndex(b => b.currency === Currency.XOF);
       if (xofIndex !== -1) {
         try {
-          const xofAmount = await accountService.convertCurrency(
-            usdBalance,
-            Currency.USD,
-            Currency.XOF
-          );
-          updatedBalances[xofIndex] = {
-            ...updatedBalances[xofIndex],
-            amount: formatNumberWithCommas(xofAmount.toFixed(2)),
-            loading: false
-          };
+          if (usdBalance === 0) {
+            updatedBalances[xofIndex] = {
+              ...updatedBalances[xofIndex],
+              amount: 0,
+              loading: false
+            };
+          } else {
+            const xofAmount = await accountService.convertCurrency(
+              usdBalance,
+              Currency.USD,
+              Currency.XOF
+            );
+            updatedBalances[xofIndex] = {
+              ...updatedBalances[xofIndex],
+              amount: formatNumberWithCommas(xofAmount.toFixed(2)),
+              loading: false
+            };
+          }
         } catch (err) {
           console.error('Erreur lors de la conversion en XOF:', err);
-          updatedBalances[xofIndex].loading = false;
+          updatedBalances[xofIndex] = {
+            ...updatedBalances[xofIndex],
+            amount: 0,
+            loading: false
+          };
         }
       }
 
       setBalances(updatedBalances);
     } catch (error) {
       console.error('Erreur lors de la conversion des devises:', error);
+      setBalances(prev =>
+        prev.map(b => ({ ...b, loading: false, amount: 0 }))
+      );
     }
   };
-
 
   const formatNumberWithCommas = (number: string) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
