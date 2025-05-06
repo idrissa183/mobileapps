@@ -1,81 +1,112 @@
-# Application Mobile Banking
+# 📱 Application Mobile Banking
 
-Application mobile de gestion bancaire développée avec React Native et Expo, avec un backend FastAPI.
+Application mobile de gestion bancaire développée avec **React Native** et **Expo**, connectée à un backend **FastAPI**.
 
-## Fonctionnalités principales
+---
 
-- Authentification sécurisée (Login/signup)
-- Vérification par **OTP** (valable 1 minute)
+## 🚀 Fonctionnalités principales
+
+- Authentification sécurisée (connexion / inscription)
+- Vérification par **OTP** (valide 1 minute)
 - Gestion des comptes bancaires
-- Visualisation de cartes bancaires
-- Gestion des opérations bancaires
+- Visualisation des cartes bancaires
+- Historique des transactions
 - Gestion du profil et des paramètres
-- Liste des contacts
+- Liste et détails des contacts
+
+---
 
 ## 🔐 Authentification
 
-### 1. Page de Login
+### 1. Connexion
 
 L'utilisateur peut se connecter s'il possède déjà un compte :
 
 - Champs requis : `username` et `password`
-- Le mot de passe doit contenir :
-  - 8 caractères minimum
-  - 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
+- Contraintes sur le mot de passe :
+  - Minimum 8 caractères
+  - Au moins 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial
 
-👉 Sinon, il peut cliquer sur **Sign Up** pour créer un compte.
+👉 Si l'utilisateur ne possède pas de compte, il peut cliquer sur **Sign Up** pour s'inscrire.
 
-### 2. Page de Sign Up
+### 2. Inscription
 
 L'utilisateur doit renseigner les informations suivantes :
 
-- `Username`
-- `Full name`
-- `Email`
-- `Password`
-- `Confirm Password`
-- `Téléphone`
+- Nom d'utilisateur (`Username`)
+- Nom complet (`Full name`)
+- Email
+- Mot de passe (`Password`)
+- Confirmation du mot de passe (`Confirm Password`)
+- Numéro de téléphone (`Téléphone`)
 
-📧 Un **OTP (One-Time Password)** est envoyé à l’adresse e-mail (pensez à vérifier le dossier spam).
+📧 Un **OTP (One-Time Password)** est envoyé à l'adresse e-mail fournie (vérifiez le dossier spam si besoin).
 
 ### 3. Vérification OTP
 
-- Le code OTP doit être saisi dans un délai de **1 minute**
-- Une fois validé, l'utilisateur est redirigé automatiquement vers la page **Login**
+- Le code OTP est valide pendant **1 minute**
+- Une fois validé, l'utilisateur est redirigé automatiquement vers la page de connexion
 
-## Gestion de comptes bancaires
-Par défaut un utilisateur est crée avec un compte bancaire.
-Il a ensuite la possibilité de créer des cartes bancaires, d'éffectuer des opérations de debit (withdraw), creditation (Top Up), de transfert
+---
 
-## 🎨 Screenshots
-| Login | Signup | OTP Verification |
-|-------|--------|------------------|
+## 🏦 Gestion des comptes
+
+- Lors de l'inscription, un compte bancaire est automatiquement créé pour l'utilisateur
+- Il peut ensuite :
+  - Créer des cartes bancaires
+  - Effectuer des opérations :
+    - Débit (Retrait)
+    - Crédit (Recharge / Top-Up)
+    - Transfert d'argent
+
+---
+
+## 🎨 Aperçus de l'application
+
+### Authentification
+| Connexion | Inscription | Vérification OTP |
+|----------|-------------|------------------|
 | ![Login](/frontend/Banking/Readme/login.jpeg) | ![Signup](/frontend/Banking/Readme/signup.jpeg) | ![OTP](/frontend/Banking/Readme/token.jpg) |
 
-| Home | Settings | Settings-Logout |
-|-------|--------|------------------|
-| ![Login](/frontend/Banking/Readme/home.jpg) | ![Signup](/frontend/Banking/Readme/settings.jpg) | ![OTP](/frontend/Banking/Readme/logout.jpg) |
+### Navigation
+| Accueil | Paramètres | Déconnexion |
+|--------|------------|-------------|
+| ![Home](/frontend/Banking/Readme/home.jpg) | ![Settings](/frontend/Banking/Readme/settings.jpg) | ![Logout](/frontend/Banking/Readme/logout.jpg) |
 
+### Cartes
+| Liste des cartes | Création de carte | Détails de carte |
+|------------------|-------------------|------------------|
+| ![Cards](/frontend/Banking/Readme/card.jpg) | ![Create Card](/frontend/Banking/Readme/card222.jpg) | ![Card Info](/frontend/Banking/Readme/card3.jpg) |
 
-| Cards | Cards creation | card infos |
-|-------|--------|------------------|
-| ![Login](/frontend/Banking/Readme/card.jpg) | ![Signup](/frontend/Banking/Readme/card222.jpg) | ![OTP](/frontend/Banking/Readme/card3.jpg) |
+### Transactions
+| Historique | Détail d'une transaction | |
+|-----------|---------------------------|----|
+| ![History1](/frontend/Banking/Readme/history1.jpg) | ![History2](/frontend/Banking/Readme/history2.jpg) |   |
 
-| History | Detail of some transaction |
-|-------|--------|
-| ![Login](/frontend/Banking/Readme/history1.jpg) | ![Signup](/frontend/Banking/Readme/history2.jpg) |
+### Contacts
+| Liste des contacts | Détails d’un contact | |
+|--------------------|-----------------------|--|
+| ![Contact](/frontend/Banking/Readme/contact.jpg) | ![Contact2](/frontend/Banking/Readme/contact2.jpg) | |
 
-| Contact | Contact detail |
-|-------|--------|
-| ![Login](/frontend/Banking/Readme/contact.jpg) | ![Signup](/frontend/Banking/Readme/contact2.jpg) |
+---
 
+## 🚀 Déploiement
 
-## Déploiement
+- **Backend** : Déployé sur [Render](https://banque-vgx0.onrender.com/api/docs)
 
-* **Backend**: [Déployé sur Render](https://banque-vgx0.onrender.com/api/docs)
+---
 
-## Architecture du projet 
+## 🧪 Utilisateurs de test
 
+Vous pouvez utiliser les comptes suivants pour tester rapidement l'application :
+
+```plaintext
+username: youmani
+password: P@ssword123
+
+username: idrissa183
+password: P@ssword123
+```
 
 ##  Technologies utilisées
 
