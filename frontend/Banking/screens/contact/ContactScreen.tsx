@@ -12,7 +12,8 @@ import {
   Dimensions,
   ActivityIndicator,
   RefreshControl,
-  Platform
+  Alert,
+  Modal
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
 import contactService, { Contact } from '../../services/contactService';
@@ -20,6 +21,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import useTranslation from '../../hooks/useTranslation';
+import transactionService, { TransferRequest } from '../../services/transactionService';
 
 const { width } = Dimensions.get('window');
 
@@ -38,6 +40,17 @@ const ContactScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Transfer modal state
+  const [isTransferModalVisible, setIsTransferModalVisible] = useState<boolean>(false);
+  const [transactionAmount, setTransactionAmount] = useState<string>('');
+  const [transactionDescription, setTransactionDescription] = useState<string>('');
+  const [transferLoading, setTransferLoading] = useState<boolean>(false);
+
+  const resetTransactionInputs = () => {
+    setTransactionAmount('');
+    setTransactionDescription('');
+  };
 
   const fetchContacts = useCallback(async (search?: string) => {
     try {
@@ -77,17 +90,76 @@ const ContactScreen: React.FC = () => {
     }
   };
 
-  // const handleSendMoney = (contact: Contact) => {
-  //   navigation.navigate('TransferScreen', { contact });
-  // };
+  const handleSendMoney = () => {
+    if (selectedContact) {
+      setIsTransferModalVisible(true);
+    }
+  };
 
-  // const handleRequestMoney = (contact: Contact) => {
-  //   navigation.navigate('RequestScreen', { contact });
-  // };
+  const handleTransfer = async () => {
+    if (!selectedContact) {
+      return;
+    }
 
-  // const handleAddContact = () => {
-  //   navigation.navigate('AddContactScreen');
-  // };
+    // Validation du montant
+    if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    setTransferLoading(true);
+    try {
+      const transferData: TransferRequest = {
+        to_account_number: selectedContact.account_number,
+        amount: parseFloat(transactionAmount),
+        description: transactionDescription || t('transactions.transferDefault')
+      };
+
+      await transactionService.transferMoney(transferData);
+      setIsTransferModalVisible(false);
+      resetTransactionInputs();
+
+      Alert.alert(
+        t('alerts.success'),
+        t('alerts.transferSuccess'),
+        [{ text: t('common.ok') }]
+      );
+
+    } catch (error: any) {
+      console.error('Error transferring money:', error);
+      if (error.response?.data?.detail === "Solde insuffisant") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.insufficientFunds'),
+          [{ text: t('common.ok') }]
+        );
+      } else if (error.response?.data?.detail === "Impossible de transférer vers le même compte") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.sameAccountTransfer'),
+          [{ text: t('common.ok') }]
+        );
+      } else if (error.response?.data?.detail === "Le compte destinataire est inactif") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.inactiveRecipient'),
+          [{ text: t('common.ok') }]
+        );
+      } else {
+        Alert.alert(
+          t('alerts.error'),
+          error.response?.data?.detail || t('alerts.transferError'),
+          [{ text: t('common.ok') }]
+        );
+      }
+    } finally {
+      setTransferLoading(false);
+    }
+  };
 
   const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
   const cardStyle = isDarkMode ? styles.darkCard : styles.lightCard;
@@ -95,7 +167,7 @@ const ContactScreen: React.FC = () => {
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const inputStyle = isDarkMode ? styles.darkInput : styles.lightInput;
   const inputContainerStyle = isDarkMode ? styles.darkInputContainer : styles.lightInputContainer;
-  const dividerStyle = isDarkMode ? styles.darkDivider : styles.lightDivider;
+  const modalContainerStyle = isDarkMode ? styles.darkModalContainer : styles.lightModalContainer;
 
   const renderContactItem = ({ item }: { item: Contact }) => (
     <TouchableOpacity
@@ -154,12 +226,12 @@ const ContactScreen: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, containerStyle]}>
       <View style={styles.header}>
-              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
-              </TouchableOpacity>
-              <Text style={[styles.headerTitle, headerTextStyle]}>{t('title', 'contacts')}</Text>
-              <View style={{ width: 24 }} />
-            </View>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#fff" : "#000"} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, headerTextStyle]}>{t('title', 'contacts')}</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -189,14 +261,6 @@ const ContactScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Error Display */}
-        {/* {error && (
-          <View style={[styles.errorContainer, cardStyle]}>
-            <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )} */}
 
         {/* Loading Indicator */}
         {loading && !refreshing && (
@@ -252,7 +316,7 @@ const ContactScreen: React.FC = () => {
             <View style={styles.detailsActions}>
               <TouchableOpacity
                 style={styles.actionBtnPrimary}
-                onPress={() => {}}
+                onPress={handleSendMoney}
               >
                 <Text style={styles.actionBtnPrimaryText}>{t('contacts.sendMoney')}</Text>
               </TouchableOpacity>
@@ -292,6 +356,80 @@ const ContactScreen: React.FC = () => {
           </>
         )}
       </ScrollView>
+      <Modal
+        visible={isTransferModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsTransferModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, modalContainerStyle]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, isDarkMode ? styles.darkHeaderText : styles.lightHeaderText]}>
+                {t('transactions.transfer')}
+              </Text>
+              <TouchableOpacity onPress={() => setIsTransferModalVisible(false)}>
+                <Ionicons name="close" size={24} color={isDarkMode ? "#FFFFFF" : "#111827"} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalContent}>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('transactions.recipient')}</Text>
+                <View style={[styles.recipientDisplay]}>
+                  <Text style={[styles.recipientText, isDarkMode && styles.darkRecipientText]}>
+                    {selectedContact?.full_name} ({selectedContact?.account_number})
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('transactions.amount')}</Text>
+                <TextInput
+                  style={[styles.input, inputStyle]}
+                  value={transactionAmount}
+                  onChangeText={setTransactionAmount}
+                  placeholder="0.00"
+                  placeholderTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, secondaryTextStyle]}>{t('transactions.description')}</Text>
+                <TextInput
+                  style={[styles.input, inputStyle]}
+                  value={transactionDescription}
+                  onChangeText={setTransactionDescription}
+                  placeholder={t('transactions.transferDefault')}
+                  placeholderTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setIsTransferModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.createButton}
+                onPress={handleTransfer}
+                disabled={transferLoading}
+              >
+                {transferLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.createButtonText}>{t('common.confirm')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -594,6 +732,93 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#EF4444',
     flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalContent: {
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  input: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+  },
+  lightModalContainer: {
+    backgroundColor: '#FFFFFF',
+  },
+  darkModalContainer: {
+    backgroundColor: '#1F2937',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cancelButton: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  createButton: {
+    backgroundColor: '#2563EB',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'center',
+  },
+  createButtonText: {
+    color: 'white',
+    fontWeight: '500',
+  },
+  recipientDisplay: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+    justifyContent: 'center',
+  },
+  recipientText: {
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  darkRecipientText: {
+    color: '#F9FAFB',
   },
 });
 
