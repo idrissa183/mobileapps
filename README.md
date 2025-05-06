@@ -79,14 +79,14 @@ L'utilisateur doit renseigner les informations suivantes :
 | ![Cards](/frontend/Banking/Readme/card.jpg) | ![Create Card](/frontend/Banking/Readme/card222.jpg) | ![Card Info](/frontend/Banking/Readme/card3.jpg) |
 
 ### Transactions
-| Historique | Détail d'une transaction |
-|-----------|---------------------------|
-| ![History1](/frontend/Banking/Readme/history1.jpg) | ![History2](/frontend/Banking/Readme/history2.jpg) |
+| Historique | Détail d'une transaction | |
+|-----------|---------------------------|----|
+| ![History1](/frontend/Banking/Readme/history1.jpg) | ![History2](/frontend/Banking/Readme/history2.jpg) |   |
 
 ### Contacts
-| Liste des contacts | Détails d’un contact |
-|--------------------|-----------------------|
-| ![Contact](/frontend/Banking/Readme/contact.jpg) | ![Contact2](/frontend/Banking/Readme/contact2.jpg) |
+| Liste des contacts | Détails d’un contact | |
+|--------------------|-----------------------|--|
+| ![Contact](/frontend/Banking/Readme/contact.jpg) | ![Contact2](/frontend/Banking/Readme/contact2.jpg) | |
 
 ---
 
