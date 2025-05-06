@@ -25,7 +25,6 @@ import ProfileScreen from './screens/profile/ProfileScreen';
 // Auth Screens
 import SignInScreen from './screens/auth/SignInScreen';
 import SignUpScreen from './screens/auth/SignUpScreen';
-import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import OTPVerificationScreen from './screens/auth/OTPVerificationScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import useAuth from './hooks/useAuth';
@@ -36,10 +35,7 @@ import TransactionDetailScreen from './screens/history/TransactionDetailScreen';
 export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
-  ForgotPassword: undefined;
   OTPVerification: { email: string; mode: string };
-  Terms: undefined;
-  PrivacyPolicy: undefined;
   MainApp: undefined;
 };
 
@@ -82,7 +78,6 @@ const Navigation = () => {
           <>
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
           </>
         ) : (

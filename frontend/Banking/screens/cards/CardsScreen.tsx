@@ -10,12 +10,13 @@ import {
   Dimensions,
   ActivityIndicator,
   Modal,
-  TextInput
+  TextInput,
+  Alert
 } from "react-native";
 import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import cardService, { Card, CardCreateRequest, CardStatus, CardType } from '../../services/cardService';
-import transactionService, {TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
+import transactionService, { TransferRequest, DepositRequest, WithdrawalRequest } from '../../services/transactionService';
 import useTranslation from '../../hooks/useTranslation';
 import { useNavigation } from '@react-navigation/native';
 import contactService, { Contact } from '../../services/contactService';
@@ -75,14 +76,19 @@ const CardsScreen: React.FC = () => {
     fetchBalance();
   }, []);
 
-   // Function to fetch user balance
-   const fetchBalance = async () => {
+  // Function to fetch user balance
+  const fetchBalance = async () => {
     setBalanceLoading(true);
     try {
       const userAccount = await accountService.getUserAccount();
       setBalance(userAccount.balance);
     } catch (error) {
       console.error('Error fetching balance:', error);
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.balanceError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setBalanceLoading(false);
     }
@@ -100,6 +106,11 @@ const CardsScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching cards:', error);
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.cardsError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setCardsLoading(false);
     }
@@ -113,6 +124,11 @@ const CardsScreen: React.FC = () => {
       setContacts(data);
     } catch (err) {
       console.error('Failed to fetch contacts:', err);
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.contactsError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setContactsLoading(false);
     }
@@ -144,9 +160,19 @@ const CardsScreen: React.FC = () => {
       setCards(prevCards => [...prevCards, newCard]);
       setSelectedCard(newCard);
       setIsNewCardModalVisible(false);
+      Alert.alert(
+        t('alerts.success'),
+        t('alerts.cardCreationSuccess'),
+        [{ text: t('common.ok') }]
+      );
 
     } catch (error) {
       console.error('Error creating new card:', error);
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.cardCreationError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -162,6 +188,11 @@ const CardsScreen: React.FC = () => {
   // Handle Top Up (Deposit)
   const handleTopUp = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -176,9 +207,19 @@ const CardsScreen: React.FC = () => {
       setIsTopUpModalVisible(false);
       resetTransactionInputs();
       fetchBalance();
+      Alert.alert(
+        t('alerts.success'),
+        t('alerts.depositSuccess',),
+        [{ text: t('common.ok') }]
+      );
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error depositing money:', error);
+      Alert.alert(
+        t('alerts.error'),
+        error.response?.data?.detail || t('alerts.depositError'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setLoading(false);
     }
@@ -187,6 +228,20 @@ const CardsScreen: React.FC = () => {
   // Handle Withdraw
   const handleWithdraw = async () => {
     if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    if (parseFloat(transactionAmount) > balance) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.insufficientFunds'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -201,9 +256,27 @@ const CardsScreen: React.FC = () => {
       setIsWithdrawModalVisible(false);
       resetTransactionInputs();
       fetchBalance();
+      Alert.alert(
+        t('alerts.success'),
+        t('alerts.withdrawSuccess'),
+        [{ text: t('common.ok') }]
+      );
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error withdrawing money:', error);
+      if (error.response?.data?.detail === "Insufficient funds") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.insufficientFunds'),
+          [{ text: t('common.ok') }]
+        );
+      } else {
+        Alert.alert(
+          t('alerts.error'),
+          error.response?.data?.detail || t('alerts.withdrawError'),
+          [{ text: t('common.ok') }]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -211,7 +284,33 @@ const CardsScreen: React.FC = () => {
 
   // Handle Transfer
   const handleTransfer = async () => {
-    if (!recipientAccountNumber || !transactionAmount || parseFloat(transactionAmount) <= 0) {
+    // Validation du destinataire
+    if (!recipientAccountNumber) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.noRecipient'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    // Validation du montant
+    if (!transactionAmount || parseFloat(transactionAmount) <= 0) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.invalidAmount'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    // Vérification du solde côté client avant d'appeler l'API
+    if (parseFloat(transactionAmount) > balance) {
+      Alert.alert(
+        t('alerts.error'),
+        t('alerts.insufficientFunds'),
+        [{ text: t('common.ok') }]
+      );
       return;
     }
 
@@ -227,9 +326,41 @@ const CardsScreen: React.FC = () => {
       setIsTransferModalVisible(false);
       resetTransactionInputs();
       fetchBalance();
+      const recipientName = contacts.find(c => c.account_number === recipientAccountNumber)?.full_name || recipientAccountNumber;
+      Alert.alert(
+        t('alerts.success'),
+        t('alerts.transferSuccess'),
+        [{ text: t('common.ok') }]
+      );
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error transferring money:', error);
+      if (error.response?.data?.detail === "Solde insuffisant") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.insufficientFunds'),
+          [{ text: t('common.ok') }]
+        );
+      } else if (error.response?.data?.detail === "Impossible de transférer vers le même compte") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.sameAccountTransfer'),
+          [{ text: t('common.ok') }]
+        );
+      } else if (error.response?.data?.detail === "Le compte destinataire est inactif") {
+        Alert.alert(
+          t('alerts.error'),
+          t('alerts.inactiveRecipient'),
+          [{ text: t('common.ok') }]
+        );
+      } else {
+        // Autres erreurs
+        Alert.alert(
+          t('alerts.error'),
+          error.response?.data?.detail || t('alerts.transferError'),
+          [{ text: t('common.ok') }]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -389,33 +520,6 @@ const CardsScreen: React.FC = () => {
                 <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.expiryDate')}:</Text>
                 <Text style={[styles.cardInfoValueText, headerTextStyle]}>{selectedCard.expiry_date}</Text>
               </View>
-
-              {/* <View style={styles.cardInfoItem}>
-              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.cardType')}:</Text>
-              <Text style={[styles.cardInfoValueText, headerTextStyle]}>
-                {selectedCard.card_type === CardType.DEBIT ? t('cards.debitCard') : t('cards.virtualCard')}
-              </Text>
-            </View> */}
-
-              {/* <View style={styles.cardInfoItem}>
-              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.status')}:</Text>
-              <View style={styles.statusContainer}>
-                <View style={[
-                  styles.statusIndicator, 
-                  selectedCard.status === CardStatus.ACTIVE ? styles.activeIndicator : styles.inactiveIndicator
-                ]} />
-                <Text style={[styles.cardInfoValueText, headerTextStyle]}>
-                  {selectedCard.status === CardStatus.ACTIVE ? t('cards.active') : t('cards.inactive')}
-                </Text>
-              </View>
-            </View> */}
-
-              {/* <View style={styles.cardInfoItem}>
-              <Text style={[styles.cardInfoLabel, secondaryTextStyle]}>{t('cards.contactless')}:</Text>
-              <Text style={[styles.cardInfoValueText, headerTextStyle]}>
-                {selectedCard.is_contactless ? t('common.yes') : t('common.no')}
-              </Text>
-            </View> */}
             </View>
 
             {/* Action Buttons */}
@@ -699,7 +803,7 @@ const CardsScreen: React.FC = () => {
                 {contactsLoading ? (
                   <ActivityIndicator size="small" color={isDarkMode ? "#818CF8" : "#4F46E5"} />
                 ) : (
-                  <View style={[styles.dropdown, inputStyle]}>
+                  <View style={[styles.dropdown]}>
                     <ScrollView style={styles.dropdownList}>
                       {contacts.length > 0 ? (
                         contacts.map((contact) => (
@@ -1212,13 +1316,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F2937',
   },
   lightInput: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#D1D5DB',
-    color: '#111827',
+    color: '#1F2937',
   },
   darkInput: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
     color: '#F9FAFB',
   },
   lightModalContainer: {

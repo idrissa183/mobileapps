@@ -123,6 +123,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const secondaryTextStyle = isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText;
   const sectionStyle = isDarkMode ? styles.darkSection : styles.lightSection;
   const itemStyle = isDarkMode ? styles.darkItem : styles.lightItem;
+  const iconColor = isDarkMode ? "#FFFFFF" : "#4F46E5";
 
   const openLanguageModal = (): void => {
     setLangModalVisible(true);
@@ -272,25 +273,10 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const accountSettings = [
-    {
-      icon: <Text style={styles.iconText}>🔑</Text>,
-      title: t('password', 'settings'),
-      subtitle: t('changePassword', 'settings'),
-      onPress: () => console.log("Password pressed")
-    },
-    {
-      icon: <Text style={styles.iconText}>📱</Text>,
-      title: t('phoneNumber', 'settings'),
-      subtitle: t('changePhoneNumber', 'settings'),
-      onPress: () => console.log("Phone number pressed")
-    }
-  ];
-
   const privacySettings = [
     {
       type: 'toggle',
-      icon: <Text style={styles.iconText}>📍</Text>,
+      icon: <Ionicons name="location-outline" size={20} color={iconColor} />,
       title: t('locationServices', 'settings'),
       subtitle: locationEnabled ? t('locationServicesEnabled', 'settings') : t('locationServicesDisabled', 'settings'),
       value: locationEnabled,
@@ -330,7 +316,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       }
     },
     {
-      icon: <Text style={styles.iconText}>🔒</Text>,
+      icon: <Ionicons name="shield-outline" size={20} color={iconColor} />,
       title: t('privacyPolicy', 'settings'),
       subtitle: t('privacyPolicyDescription', 'settings'),
       onPress: () => {
@@ -338,7 +324,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       }
     },
     {
-      icon: <Text style={styles.iconText}>📄</Text>,
+      icon: <Ionicons name="document-text-outline" size={20} color={iconColor} />,
       title: t('termsOfUse', 'settings'),
       subtitle: t('termsOfUseDescription', 'settings'),
       onPress: () => {
@@ -349,7 +335,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
   const supportSettings = [
     {
-      icon: <Text style={styles.iconText}>✉️</Text>,
+      icon: <Ionicons name="mail-outline" size={20} color={iconColor} />,
       title: t('contactSupport', 'settings'),
       subtitle: t('contactSupportDescription', 'settings'),
       onPress: () => {
@@ -357,7 +343,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       }
     },
     {
-      icon: <Text style={styles.iconText}>⭐</Text>,
+      icon: <Ionicons name="star-outline" size={20} color={iconColor} />,
       title: t('rateApp', 'settings'),
       subtitle: t('rateAppDescription', 'settings'),
       onPress: () => {
@@ -399,7 +385,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <SectionHeader title={t('preferences', 'settings').toUpperCase()} />
         <Section>
           <ToggleItem
-            icon={<Text style={styles.iconText}>🔔</Text>}
+            icon={<Ionicons name="notifications-outline" size={20} color={iconColor} />}
             title={t('notifications', 'settings')}
             subtitle={notificationsEnabled ? t('notificationsEnabled', 'settings') : t('notificationsDisabled', 'settings')}
             value={notificationsEnabled}
@@ -416,7 +402,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Language selection */}
           <SettingItem
-            icon={<Text style={styles.iconText}>🌐</Text>}
+            icon={<Ionicons name="globe-outline" size={20} color={iconColor} />}
             title={t('language', 'settings')}
             subtitle={`${t('changeLanguage', 'settings')}`}
             onPress={openLanguageModal}
@@ -435,7 +421,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Theme selection */}
           <SettingItem
-            icon={<Text style={styles.iconText}>🌙</Text>}
+            icon={<Ionicons name={isDarkMode ? "moon-outline" : "sunny-outline"} size={20} color={iconColor} />}
             title={t('theme', 'settings')}
             subtitle={getThemeModeName()}
             onPress={handleThemeChange}
@@ -482,7 +468,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                   icon={setting.icon}
                   title={setting.title}
                   subtitle={setting.subtitle}
-                  onPress={() => setting.onPress}
+                  onPress={() => { setting.onPress }}
                 />
               )}
               {index < privacySettings.length - 1 && <View style={styles.divider} />}
@@ -580,7 +566,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, isDarkMode ? styles.darkModal : styles.lightModal]}>
             <View style={styles.logoutModalContent}>
-
               <>
                 <View style={styles.logoutIconContainer}>
                   <Ionicons
@@ -593,7 +578,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                 <Text style={[styles.logoutModalTitle, headerTextStyle]}>
                   {t('confirmLogout', 'auth') || 'Confirm Logout'}
                 </Text>
-
 
                 <View style={styles.logoutModalButtons}>
                   <TouchableOpacity
@@ -615,7 +599,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
               </>
-
             </View>
           </View>
         </View>

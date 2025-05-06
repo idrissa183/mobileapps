@@ -85,6 +85,12 @@ export default {
     incorrectCredentials: "Email ou mot de passe incorrect.",
     accountInactive: "Votre compte est inactif. Veuillez contacter le support.",
     logoutConfirm: "Confirmer",
+    accountExists: "Compte existant",
+    accountExistsDetail: "Il semble que vous ayez déjà commencé une inscription. Voulez-vous continuer avec la vérification OTP?",
+    goToVerification: "Vérifier mon OTP",
+    cancel: "Annuler",
+    usernameAlreadyExists: "Ce nom d'utilisateur est déjà enregistré. Si vous n'avez pas terminé l'inscription précédente, essayez de vérifier votre OTP.",
+    emailAlreadyExists: "Cet email est déjà enregistré. Si vous n'avez pas terminé l'inscription précédente, essayez de vérifier votre OTP."
 
   },
   common: {
@@ -111,7 +117,10 @@ export default {
     no: "Non",
     ok: "OK",
     create: "Créer",
-    confirm: "Confirmer"
+    confirm: "Confirmer",
+    next: 'Suivant',
+    edit: 'Modifier',
+    delete: 'Supprimer',
 
   },
   home: {
@@ -204,7 +213,8 @@ export default {
     notAvailable: 'Non disponible',
     menu: 'Menu',
     history: 'Historique des Transactions',
-    invite: 'Inviter des Amis'
+    invite: 'Inviter des Amis',
+    inviteFriends: "Inviter mes amis",
   },
   settings: {
     settings: 'Paramètres',
@@ -267,6 +277,10 @@ export default {
     locationServicesDisabled: "La localisation est désactivée",
     linkError: "Erreur d'ouverture de lien",
     cannotOpenLink: "Impossible d'ouvrir ce lien",
+    themeChanged: "Thème Mis à Jour",
+    lightThemeApplied: "Le thème clair a été appliqué",
+    darkThemeApplied: "Le thème sombre a été appliqué",
+    systemThemeApplied: "Le thème par défaut du système a été appliqué"
   },
   transactions: {
     title: 'Transactions',
@@ -328,5 +342,31 @@ export default {
     errorFetching: 'Erreur lors du chargement des contacts',
     errorFetchingDetails: 'Erreur lors du chargement des détails du contact',
     addContact: 'Ajouter un contact'
-  }
+  },
+  alerts: {
+    success: 'Succès',
+    error: 'Erreur',
+    warning: 'Avertissement',
+    info: 'Information',
+    balanceError: 'Échec de la récupération de votre solde. Veuillez réessayer plus tard.',
+    cardsError: 'Échec du chargement de vos cartes. Veuillez réessayer plus tard.',
+    contactsError: 'Échec du chargement de vos contacts. Veuillez réessayer plus tard.',
+    cardCreationSuccess: 'Votre nouvelle carte a été créée avec succès.',
+    cardCreationError: 'Échec de la création de votre nouvelle carte. Veuillez réessayer plus tard.',
+    invalidAmount: 'Veuillez saisir un montant valide.',
+    insufficientFunds: 'Vous n\'avez pas assez de fonds pour cette transaction.',
+    noRecipient: 'Veuillez sélectionner un destinataire pour votre virement.',
+    sameAccountTransfer: 'Vous ne pouvez pas transférer de l\'argent vers votre propre compte.',
+    inactiveRecipient: 'Le compte du destinataire est inactif.',
+    depositSuccess: 'Dépôt effectué avec succès sur votre compte.',
+    depositError: 'Échec du dépôt de fonds. Veuillez réessayer plus tard.',
+    withdrawSuccess: 'Retrait effectué avec succès de votre compte.',
+    withdrawError: 'Échec du retrait de fonds. Veuillez réessayer plus tard.',
+    transferSuccess: 'Transfert effectué avec succès.',
+    transferError: 'Échec du transfert de fonds. Veuillez réessayer plus tard.',
+  },
+  balance: {
+    current: 'Solde Actuel',
+    available: 'Solde Disponible',
+  },
 };

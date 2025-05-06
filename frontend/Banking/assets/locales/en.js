@@ -85,6 +85,8 @@ export default {
     incorrectCredentials: "Incorrect email or password.",
     accountInactive: "Your account is inactive. Please contact support.",
     logoutConfirm: "Confirm",
+    usernameAlreadyExists: "This username is already registered. If you didn't complete a previous registration, try verifying your OTP.",
+    emailAlreadyExists: "This email is already registered. If you didn't complete a previous registration, try verifying your OTP."
 
   },
   common: {
@@ -111,7 +113,10 @@ export default {
     no: "No",
     ok: "OK",
     create: "Create",
-    confirm: "Confirm"
+    confirm: "Confirm",
+    next: 'Next',
+    edit: 'Edit',
+    delete: 'Delete',
 
   },
   home: {
@@ -134,7 +139,7 @@ export default {
   },
   cards: {
     title: "Cards",
-    topUp: "Top Up",
+    topUp: "Credit",
     cardDetail: "Card Detail",
     newCard: "New Card",
     cardNumber: "Card Number",
@@ -204,7 +209,8 @@ export default {
     notAvailable: 'Not available',
     menu: 'Menu',
     history: 'Transaction History',
-    invite: 'Invite Friends'
+    invite: 'Invite Friends',
+    inviteFriends: "Invite your friends"
   },
   settings: {
     settings: 'Settings',
@@ -267,6 +273,10 @@ export default {
     locationServicesDisabled: "Location is disabled",
     linkError: "Error opening link",
     cannotOpenLink: "Cannot open this link",
+    themeChanged: "Theme Updated",
+    lightThemeApplied: "Light theme has been applied",
+    darkThemeApplied: "Dark theme has been applied",
+    systemThemeApplied: "System default theme has been applied"
   },
   transactions: {
     title: 'Transactions',
@@ -328,5 +338,27 @@ export default {
     errorFetching: 'Error loading contacts',
     errorFetchingDetails: 'Error loading contact details',
     addContact: 'Add Contact'
-  }
+  },
+  alerts: {
+    success: 'Success',
+    error: 'Error',
+    warning: 'Warning',
+    info: 'Information',
+    balanceError: 'Failed to fetch your account balance. Please try again later.',
+    cardsError: 'Failed to load your cards. Please try again later.',
+    contactsError: 'Failed to load your contacts. Please try again later.',
+    cardCreationSuccess: 'Your new card has been created successfully.',
+    cardCreationError: 'Failed to create your new card. Please try again later.',
+    invalidAmount: 'Please enter a valid amount.',
+    insufficientFunds: 'You do not have enough funds for this transaction.',
+    noRecipient: 'Please select a recipient for your transfer.',
+    sameAccountTransfer: 'You cannot transfer money to your own account.',
+    inactiveRecipient: 'The recipient account is inactive.',
+    depositSuccess: 'Successfully deposited to your account.',
+    depositError: 'Failed to deposit funds. Please try again later.',
+    withdrawSuccess: 'Successfully withdrawn from your account.',
+    withdrawError: 'Failed to withdraw funds. Please try again later.',
+    transferSuccess: 'Successfully transferred.',
+    transferError: 'Failed to transfer funds. Please try again later.',
+  },
 };
