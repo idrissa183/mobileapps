@@ -76,11 +76,6 @@ Il a ensuite la possibilité de créer des cartes bancaires, d'éffectuer des op
 
 ## Architecture du projet 
 
-* **Backend**
-![architecture backend](/frontend/Banking/backend-1.png)
-
-* **Frontend**
-![alt text](/frontend/Banking/frontend-1-1.png) ![alt text](/frontend/Banking/frontend-2-1.png)
 
 ##  Technologies utilisées
 
